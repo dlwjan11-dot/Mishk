@@ -1,0 +1,12 @@
+name: macOS build
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["download/**", "docs/**", "*.md"]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: sw_vers && go version || true
