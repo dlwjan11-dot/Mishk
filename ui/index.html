@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="en" dir="ltr" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -358,7 +358,7 @@ en:{
   ph_hint:"Shoot the mouse from above on a plain background. Drag the photo to move it, resize it, then drag each dot onto its button.", ph_size:"Photo size",
   on:"On", off:"Off"
 }};
-let L = "ar";
+let L = "en";
 const t = (k, ...a) => { let s = (T[L][k] ?? T.en[k] ?? k); a.forEach((v,i)=> s = s.replace("{"+i+"}", v)); return s; };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = s => document.querySelector(s);
@@ -412,7 +412,7 @@ let S = null;               // last state from the app
 const UI = { page:"buttons", ctx:"all", sel:"gesture", apps:null, log:"", photo:"", arrange:false };
 
 const mock = (() => {
-  const cfg = {lang:"ar",theme:"dark",buttons:{gesture:{type:"gestures",gestures:{click:{type:"builtin",value:"taskview"},up:{type:"builtin",value:"taskview"},down:{type:"builtin",value:"showdesktop"},left:{type:"builtin",value:"desktopPrev"},right:{type:"builtin",value:"desktopNext"}}},back:{type:"default"},forward:{type:"default"},middle:{type:"default"},top:{type:"default"}},
+  const cfg = {lang:"en",theme:"dark",buttons:{gesture:{type:"gestures",gestures:{click:{type:"builtin",value:"taskview"},up:{type:"builtin",value:"taskview"},down:{type:"builtin",value:"showdesktop"},left:{type:"builtin",value:"desktopPrev"},right:{type:"builtin",value:"desktopNext"}}},back:{type:"default"},forward:{type:"default"},middle:{type:"default"},top:{type:"default"}},
     thumb:{type:"default"},thumbSensitivity:5,dpi:1600,precisionDpi:400,dpiPresets:[800,1600,3200],gestureDistance:60,lowBatteryAlert:true,startMinimized:false,paused:false,
     profiles:[{id:"p1",name:"Photoshop",exe:"photoshop.exe",buttons:{back:{type:"keys",value:"Space"},forward:{type:"builtin",value:"precision"}},thumb:{type:"brush"}}]};
   const dev = {key:"bolt#2",name:"MX Master 3S",conn:"bolt",online:true,ready:true,mouse:true,battery:25,charging:false,dpi:1600,dpiMin:200,dpiMax:8000,dpiStep:50,hasDpi:true,hasSmartShift:true,hasTorque:true,ssMode:"smart",ssSensitivity:10,ssTorque:50,hasHiRes:true,smoothScroll:true,invertScroll:false,hasThumb:true,invertThumb:false,hosts:3,curHost:0,buttons:["gesture","back","forward","middle","top"],gestures:true};
@@ -496,7 +496,7 @@ function setAct(btn, a){
 
 /* ================= chrome ================= */
 function renderChrome(){
-  L = cfg().lang === "en" ? "en" : "ar";
+  L = cfg().lang === "ar" ? "ar" : "en";
   document.documentElement.lang = L; document.documentElement.dir = L==="ar" ? "rtl" : "ltr";
   document.documentElement.dataset.theme = cfg().theme === "light" ? "light" : "dark";
   $("#t-tag").innerHTML = htx("tag");

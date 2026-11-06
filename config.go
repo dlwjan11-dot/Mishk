@@ -97,7 +97,7 @@ func gesturesVirtualDesktops() *Gestures {
 
 func DefaultConfig() *Config {
 	return &Config{
-		Lang: "ar",
+		Lang: "en",
 		Buttons: map[string]Action{
 			"gesture": {Type: "gestures", Gestures: gesturesVirtualDesktops()},
 			"back":    {Type: "default"},
@@ -118,8 +118,8 @@ func DefaultConfig() *Config {
 
 func (c *Config) normalize() {
 	d := DefaultConfig()
-	if c.Lang != "en" {
-		c.Lang = "ar"
+	if c.Lang != "ar" {
+		c.Lang = "en"
 	}
 	if c.Buttons == nil {
 		c.Buttons = map[string]Action{}
