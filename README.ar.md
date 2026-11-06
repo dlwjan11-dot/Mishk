@@ -10,7 +10,7 @@
 
 [English](README.md) · العربية
 
-[**نزّل Mishk.exe**](../../releases/latest)
+[**نزّل Mishk لويندوز**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)
 
 </div>
 
@@ -67,7 +67,7 @@
 ## طريقة التشغيل
 
 1. سكّر Logi Options+ وشيله من بدء التشغيل، لأن البرنامجين بيتضاربوا على الماوس. Mishk بينبهك إذا لقاه شغّال، وفيه زر بيسكّره.
-2. نزّل `Mishk.exe` من صفحة [Releases](../../releases/latest) وشغّله.
+2. [نزّل Mishk-Windows.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)، وكبسة يمين عليه ← **Extract All**، وبعدين شغّل `Mishk.exe`.
 3. إذا طلعلك تحذير SmartScreen لأن البرنامج مش موقّع، اضغط **More info** وبعدين **Run anyway**.
 
 البرنامج بيحط حاله بالـ tray وبيشتغل مع ويندوز. الإعدادات بتنحفظ بمجلد `%APPDATA%\Mishk`.
