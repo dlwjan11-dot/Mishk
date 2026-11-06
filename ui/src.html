@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mishk</title>
+<style>
+@font-face{font-family:Plex;font-weight:400;src:url(data:font/woff2;base64,{{FONT_400}}) format("woff2")}
+@font-face{font-family:Plex;font-weight:500;src:url(data:font/woff2;base64,{{FONT_500}}) format("woff2")}
+@font-face{font-family:Plex;font-weight:600;src:url(data:font/woff2;base64,{{FONT_600}}) format("woff2")}
+
+:root,[data-theme=dark]{
+  --bg:#17191c; --panel:#1f2226; --raise:#262a2f; --line:#353a41; --line-2:#454b54;
+  --text:#eceef0; --muted:#98a1ac; --faint:#6b737d;
+  --amber:#f0b040; --amber-ink:#1d1606; --amber-soft:rgba(240,176,64,.14);
+  --ok:#5ccb8a; --low:#e5604e;
+  --body:#2b2f35; --body-2:#33383f; --steel:#8c949e; --knurl:#59606a;
+  color-scheme:dark;
+}
+[data-theme=light]{
+  --bg:#eceef1; --panel:#ffffff; --raise:#f5f6f8; --line:#d7dbe0; --line-2:#c3c9d0;
+  --text:#1c2025; --muted:#5d6670; --faint:#8a929b;
+  --amber:#b97700; --amber-ink:#ffffff; --amber-soft:rgba(185,119,0,.12);
+  --ok:#1f9a59; --low:#c8402f;
+  --body:#dfe3e8; --body-2:#cfd5dc; --steel:#7a838e; --knurl:#a3abb5;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:400 14px/1.55 Plex,"Segoe UI",Tahoma,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow:hidden;user-select:none}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- frame ---------- */
+.app{display:grid;grid-template-columns:212px 1fr;height:100vh}
+nav{background:var(--panel);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;padding:20px 12px 14px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 22px}
+.brand svg{flex:none}
+.brand b{font-weight:600;font-size:17px;letter-spacing:.2px}
+.brand small{display:block;color:var(--faint);font-size:11.5px;line-height:1.2}
+.navbtn{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;margin-bottom:2px;border:0;border-radius:8px;
+  background:none;color:var(--muted);cursor:pointer;text-align:start;font-weight:500}
+.navbtn svg{width:19px;height:19px;flex:none}
+.navbtn:hover{background:var(--raise);color:var(--text)}
+.navbtn[aria-current=page]{background:var(--amber-soft);color:var(--text)}
+.navbtn[aria-current=page] svg{color:var(--amber)}
+.navfoot{margin-top:auto;padding:10px 12px 0;border-top:1px solid var(--line);color:var(--faint);font-size:12px}
+.pause{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;color:var(--muted)}
+
+main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:18px;padding:18px 28px;border-bottom:1px solid var(--line);min-height:76px}
+.devname{font-size:20px;font-weight:600;line-height:1.2}
+.devmeta{color:var(--muted);font-size:13px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
+.dot.on{background:var(--ok)}
+.battery{margin-inline-start:auto;display:flex;align-items:center;gap:12px}
+.cells{display:flex;gap:3px;direction:ltr}
+.cells i{width:7px;height:18px;border-radius:2px;background:var(--line)}
+.cells i.f{background:var(--ok)}
+.cells.low i.f{background:var(--low)}
+.battery b{font-size:20px;font-weight:600;min-width:52px;text-align:end}
+.battery span{color:var(--muted);font-size:12px;display:block;text-align:end}
+.content{flex:1;overflow:auto;padding:24px 28px 40px}
+.banner{display:flex;align-items:center;gap:14px;margin:16px 28px 0;padding:12px 16px;border:1px solid var(--amber);
+  border-radius:10px;background:var(--amber-soft)}
+.banner p{margin:0;flex:1}
+
+/* ---------- controls ---------- */
+.btn{border:1px solid var(--line-2);background:var(--raise);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--steel)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--text);border-color:var(--line)}
+.btn.danger:hover{border-color:var(--low);color:var(--low)}
+select,input[type=text],textarea{background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;width:100%}
+select{cursor:pointer}
+select:hover,input[type=text]:hover{border-color:var(--steel)}
+.switch{position:relative;width:38px;height:22px;flex:none;appearance:none;-webkit-appearance:none;margin:0;
+  background:var(--line-2);border-radius:11px;cursor:pointer;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:inset-inline-start .15s}
+.switch:checked{background:var(--amber)}
+.switch:checked::after{inset-inline-start:19px}
+input[type=range]{width:100%;accent-color:var(--amber);cursor:pointer;direction:ltr}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:9px;padding:3px;gap:3px;background:var(--raise);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:6px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+.row{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .lbl{flex:1}
+.row .lbl b{font-weight:500;display:block}
+.section{max-width:760px}
+.section h2{font-size:15px;font-weight:600;margin:28px 0 4px}
+.section h2:first-child{margin-top:0}
+.slider{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 0}
+.slider output{min-width:70px;text-align:end;font-weight:600}
+.slider .ends{grid-column:1;display:flex;justify-content:space-between;color:var(--faint);font-size:12px;direction:ltr}
+
+/* ---------- buttons page ---------- */
+.ctxbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chip{border:1px solid var(--line-2);background:none;border-radius:999px;padding:5px 13px;cursor:pointer;color:var(--muted);font-weight:500}
+.chip:hover{color:var(--text)}
+.chip[aria-pressed=true]{border-color:var(--amber);color:var(--text);background:var(--amber-soft)}
+.btnpage{display:grid;grid-template-columns:minmax(360px,1fr) 320px;gap:20px;align-items:start}
+.diagram{position:relative;width:100%;max-width:760px;aspect-ratio:760/560;direction:ltr}
+.diagram svg{position:absolute;inset:0;width:100%;height:100%}
+.callout{position:absolute;width:25.5%;transform:translateY(-50%);border:1px solid var(--line-2);background:var(--panel);
+  border-radius:9px;padding:7px 11px;cursor:pointer;text-align:start;transition:border-color .12s}
+.callout:hover{border-color:var(--steel)}
+.callout[aria-pressed=true]{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.callout small{display:block;color:var(--muted);font-size:11.5px;line-height:1.35}
+.callout span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-weight:500;line-height:1.35;overflow:hidden;font-size:13px}
+.callout.inherit span{color:var(--faint);font-weight:400}
+.diagram.off{opacity:.55}
+.diagram.arrange .hs{cursor:grab}
+.diagram.arrange .hsdot{r:8}
+.halo{fill:var(--amber);opacity:.22}
+.photo .hsdot{stroke:#fff;stroke-width:2;fill:rgba(0,0,0,.55)}
+.photo .hsdot.sel{fill:var(--amber);stroke:#fff}
+.photo .lead{stroke:rgba(255,255,255,.55)}
+.photo .lead.sel{stroke:var(--amber)}
+.phbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.phbar .slider{flex:1;min-width:200px;padding:0;grid-template-columns:auto 1fr;gap:10px}
+.hs{cursor:pointer}
+.lead{stroke:var(--line-2);stroke-width:1.2;fill:none}
+.lead.sel{stroke:var(--amber);stroke-width:1.6}
+.hsdot{fill:var(--panel);stroke:var(--steel);stroke-width:1.6}
+.hsdot.sel{fill:var(--amber);stroke:var(--amber)}
+.editor{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:0}
+.editor h3{margin:0 0 2px;font-size:16px;font-weight:600}
+.editor .sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+.field{margin-top:14px}
+.field>label{display:block;color:var(--muted);font-size:12.5px;margin-bottom:6px}
+.capture{display:flex;gap:6px}
+.capture input{direction:ltr;text-align:center;font-weight:600;cursor:text}
+.capture input.rec{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.wintog{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-top:8px}
+.glist{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
+.glist .gl{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;min-width:64px}
+.glist .gl svg{width:18px;height:18px;flex:none;color:var(--amber)}
+.glist select{padding:6px 8px}
+
+/* ---------- apps ---------- */
+.plist{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.prow{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow .ico{width:34px;height:34px;border-radius:8px;background:var(--raise);border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--amber);flex:none}
+.prow .nm{flex:1;min-width:0}
+.prow .nm b{display:block;font-weight:500}
+.prow .nm small{color:var(--muted);direction:ltr;display:inline-block}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* ---------- device ---------- */
+.hosts{display:flex;gap:10px}
+.host{width:64px;height:58px;border:1px solid var(--line-2);border-radius:10px;background:var(--raise);cursor:pointer;display:grid;place-items:center;font-size:18px;font-weight:600}
+.host[aria-pressed=true]{border-color:var(--amber);background:var(--amber-soft)}
+.host small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:-6px}
+textarea.log{height:220px;direction:ltr;font-size:12px;line-height:1.45;resize:vertical;font-family:Consolas,monospace;user-select:text}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--text);color:var(--bg);
+  padding:8px 16px;border-radius:8px;font-weight:500;transition:opacity .18s,transform .18s;pointer-events:none}
+[dir=rtl] .toast{transform:translateX(50%) translateY(20px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[dir=rtl] .toast.show{transform:translateX(50%) translateY(0)}
+.nodev{border:1px dashed var(--line-2);border-radius:12px;padding:16px 18px;margin-bottom:18px;color:var(--muted)}
+.nodev b{color:var(--text);font-weight:500}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px;z-index:10}
+.dialog{background:var(--panel);border:1px solid var(--line-2);border-radius:14px;width:min(540px,100%);padding:24px 26px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.dialog h3{margin:0 0 14px;font-size:18px;font-weight:600}
+.dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:st}
+.steps li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;padding:7px 0}
+.steps li::before{content:counter(st);flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;font-size:12.5px;color:var(--muted)}
+.wait{display:flex;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--raise);color:var(--muted)}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-2);border-top-color:var(--amber);animation:sp 0.9s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.clicks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 10px}
+.click{border:1px solid var(--line-2);border-radius:10px;padding:10px 4px;text-align:center;background:var(--raise);font-weight:600}
+.click svg{display:block;margin:0 auto 4px;width:30px;height:38px}
+.click small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.click.done{border-color:var(--ok);opacity:.55}
+.click.next{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.code{font-size:34px;font-weight:600;letter-spacing:6px;text-align:center;direction:ltr;margin:14px 0}
+.ok-ico{width:46px;height:46px;border-radius:50%;background:var(--ok);display:grid;place-items:center;margin-bottom:12px}
+.dlist .prow{padding:10px 0;border-bottom:1px solid var(--line)}
+@media (max-width:1000px){.btnpage{grid-template-columns:1fr}.editor{position:static}}
+@media (max-width:760px){.app{grid-template-columns:64px 1fr}.navbtn span,.brand div,.navfoot{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav aria-label="sections">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--amber)"/><path d="M16 6.5c-4.3 0-7 3.2-7 7.6v4.3c0 4.4 2.9 7.1 7 7.1s7-2.7 7-7.1v-4.3c0-4.4-2.7-7.6-7-7.6Z" fill="none" stroke="var(--amber-ink)" stroke-width="2"/><rect x="14.6" y="10" width="2.8" height="6" rx="1.4" fill="var(--amber-ink)"/></svg>
+      <div><b>Mishk</b><small id="t-tag"></small></div>
+    </div>
+    <button class="navbtn" data-page="buttons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c-3.6 0-6 2.6-6 6.3v5.4C6 18.4 8.5 21 12 21s6-2.6 6-6.3V9.3C18 5.6 15.6 3 12 3Z"/><path d="M12 3v7M6.2 10H17.8"/></svg><span></span></button>
+    <button class="navbtn" data-page="scroll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span></span></button>
+    <button class="navbtn" data-page="apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6M14 17h6"/></svg><span></span></button>
+    <button class="navbtn" data-page="device"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"/></svg><span></span></button>
+    <div class="navfoot">
+      <label class="pause"><span id="t-pause"></span><input type="checkbox" class="switch" id="pause"></label>
+      <div id="ver"></div>
+    </div>
+  </nav>
+  <main>
+    <header id="hdr"></header>
+    <div id="banner"></div>
+    <div class="content" id="page"></div>
+  </main>
+</div>
+<div id="modal"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<input type="file" id="photoFile" accept="image/*" hidden>
+
+<script>
+"use strict";
+/* ================= text ================= */
+const T = {
+ar:{
+  tag:"بديل خفيف لـ \u2066Logi Options+\u2069",
+  nav_buttons:"الأزرار", nav_scroll:"السرعة والتمرير", nav_apps:"البرامج", nav_device:"الجهاز والإعدادات",
+  pause:"إيقاف الأزرار مؤقتاً",
+  online:"متصل", offline:"نايم أو مفصول", charging:"عم يشحن", battery:"البطارية",
+  conn_bolt:"Logi Bolt", conn_bluetooth:"Bluetooth", conn_unifying:"Unifying", conn_receiver:"مستقبل",
+  nodev_t:"ما في ماوس ظاهر هلق.", nodev_b:"تأكد إن مستقبل Bolt موصول، وحرّك الماوس لحتى يصحى. إذا كان على Bluetooth، تأكد إنه مربوط بويندوز.",
+  optplus:"برنامج \u2066Logi Options+\u2069 شغّال، والبرنامجين رح يتضاربوا على الماوس.", optplus_btn:"سكّر \u2066Options+\u2069",
+  optplus_done:"تسكّر \u2066Options+\u2069",
+  ctx_all:"كل البرامج", ctx_add:"برنامج جديد",
+  b_gesture:"زر الإيماءات", b_back:"زر الرجوع", b_forward:"زر التقدّم", b_middle:"الزر الأوسط", b_top:"زر وضع العجلة", b_thumb:"العجلة الجانبية",
+  native_gesture:"بلا عمل", native_back:"رجوع", native_forward:"تقدّم", native_middle:"نقرة وسطى", native_top:"تبديل وضع العجلة", native_thumb:"تمرير أفقي",
+  ed_for_all:"لكل البرامج", ed_for:"بس داخل {0}",
+  ed_action:"شو بيعمل", ed_keys:"الاختصار", ed_keys_ph:"اضغط هون وبعدين الاختصار", ed_keys_hint:"الزر بيضل ضاغط الاختصار طالما إنت ضاغط عليه. مثلاً Space للـ Hand tool بفوتوشوب.",
+  ed_win:"زيد زر Win", ed_clear:"مسح",
+  ed_run:"المسار أو الرابط", ed_run_ph:"C:\\Program Files\\...\\app.exe أو https://...",
+  ed_gest:"الإيماءات", ed_gest_hint:"اضغط الزر وحرّك الماوس بالاتجاه، وبعدين فلّته. ضغطة بدون حركة = النص.",
+  g_up:"فوق", g_down:"تحت", g_left:"يسار", g_right:"يمين", g_click:"ضغطة",
+  ed_preset:"جاهز:", pre_desk:"أسطح المكتب", pre_media:"الوسائط", pre_win:"النوافذ",
+  ed_unsupported:"هالزر مش موجود بالماوس الحالي.",
+  th_action:"شو بتعمل العجلة", th_sens:"حساسية العجلة الجانبية", th_left:"لما تدوّرها لورا", th_right:"لما تدوّرها لقدّام",
+  grp_general:"عام", grp_windows:"ويندوز", grp_edit:"تحرير", grp_browser:"المتصفح", grp_media:"الوسائط", grp_mouse:"أزرار الماوس", grp_tools:"أدوات الماوس", grp_custom:"مخصص",
+  a_default:"الوظيفة الأصلية", a_none:"معطّل", a_keys:"اختصار لوحة مفاتيح…", a_run:"فتح برنامج أو رابط…", a_gestures:"إيماءات", a_inherit:"مثل إعداد كل البرامج",
+  a_taskview:"عرض المهام", a_showdesktop:"إظهار سطح المكتب", a_desktopPrev:"سطح المكتب السابق", a_desktopNext:"سطح المكتب التالي",
+  a_alttab:"التنقل بين النوافذ", a_snapleft:"تثبيت النافذة يسار", a_snapright:"تثبيت النافذة يمين", a_maximize:"تكبير النافذة", a_minimize:"تصغير النافذة",
+  a_closewindow:"إغلاق النافذة", a_screenshot:"لقطة شاشة", a_clipboard:"سجل الحافظة", a_emoji:"لوحة الإيموجي", a_explorer:"مستكشف الملفات", a_search:"بحث ويندوز",
+  a_copy:"نسخ", a_cut:"قص", a_paste:"لصق", a_undo:"تراجع", a_redo:"إعادة", a_selectall:"تحديد الكل", a_save:"حفظ", a_find:"بحث",
+  a_browserback:"رجوع", a_browserfwd:"تقدّم", a_newtab:"تبويب جديد", a_closetab:"إغلاق التبويب", a_reopentab:"رجّع آخر تبويب", a_nexttab:"التبويب التالي", a_prevtab:"التبويب السابق",
+  a_refresh:"تحديث الصفحة", a_zoomin:"تكبير", a_zoomout:"تصغير", a_zoomreset:"الحجم الأصلي",
+  a_playpause:"تشغيل / إيقاف", a_next:"المقطع التالي", a_prev:"المقطع السابق", a_volup:"رفع الصوت", a_voldown:"خفض الصوت", a_mute:"كتم الصوت",
+  a_m_left:"نقرة يسار", a_m_right:"نقرة يمين", a_m_middle:"نقرة وسطى", a_m_back:"زر الرجوع", a_m_forward:"زر التقدّم", a_m_double:"نقرة مزدوجة",
+  a_precision:"وضع الدقة (أبطأ طالما ضاغط)", a_dpicycle:"التنقل بين سرعات الماوس", a_smartshift:"تبديل وضع العجلة",
+  w_default:"تمرير أفقي", w_zoom:"تكبير وتصغير", w_volume:"الصوت", w_tabs:"التنقل بين التبويبات", w_brush:"حجم الفرشاة ([ و ])",
+  w_undoredo:"تراجع / إعادة", w_arrows:"سهم يمين ويسار (للتايملاين)", w_desktops:"أسطح المكتب", w_custom:"اختصارين مخصصين…", w_inherit:"مثل إعداد كل البرامج",
+  s_speed:"سرعة المؤشر", s_dpi:"السرعة (DPI)", s_presets:"سرعات جاهزة", s_presets_hint:"هدول السرعات اللي بيتنقّل بينهن أمر «التنقل بين سرعات الماوس».",
+  s_precision:"سرعة وضع الدقة", s_precision_hint:"بتشتغل طالما إنت ضاغط على زر عليه «وضع الدقة». مفيدة للرسم والتحديد الدقيق.",
+  s_wheel:"العجلة الرئيسية", s_mode:"وضع العجلة", m_smart:"SmartShift", m_ratchet:"تكّات دائماً", m_free:"حرّة دائماً",
+  s_sens:"حساسية SmartShift", s_sens_hint:"كل ما زاد الرقم، لازم تدوّر العجلة أسرع لحتى تفلت وتصير حرّة.",
+  s_torque:"قوة التكّات", s_smooth:"تمرير ناعم", s_smooth_hint:"تمرير بدقة عالية بدل التكّات بالبرامج اللي بتدعمه.",
+  s_invert:"عكس اتجاه التمرير", s_invert_thumb:"عكس اتجاه العجلة الجانبية",
+  s_gest:"الإيماءات", s_gdist:"المسافة اللازمة لتنحسب حركة", s_unchanged:"خلّيها متل ما هي",
+  p_title:"إعدادات خاصة لكل برنامج", p_hint:"لما يكون البرنامج قدّامك، أزراره بتشتغل حسب إعداده الخاص. أي زر ما غيّرته بيضل متل إعداد كل البرامج.",
+  p_empty:"ما في برامج بعد. زيد فوتوشوب أو بريمير أو أي برنامج بتشتغل عليه.",
+  p_add:"زيد برنامج", p_running:"البرامج المفتوحة هلق:", p_manual:"أو اكتب اسم الملف:", p_manual_ph:"photoshop.exe", p_addbtn:"زيد",
+  p_edit:"عدّل أزراره", p_del:"احذف", p_changed:"{0} تعديلات", p_none_changed:"بلا تعديلات بعد", p_loading:"عم دوّر…",
+  d_device:"الماوس", d_hosts:"Easy-Switch", d_hosts_hint:"اختار القناة لتنقل الماوس لجهاز تاني. الماوس رح يفصل عن هالكمبيوتر.",
+  d_refresh:"أعد الاتصال بالماوس", d_app:"البرنامج", d_lang:"اللغة", d_theme:"المظهر", th_dark:"غامق", th_light:"فاتح",
+  d_autostart:"يشتغل مع ويندوز", d_minimized:"يفتح مصغّر بالـ tray", d_lowbat:"تنبيه لما تضعف البطارية",
+  d_backup:"نسخة احتياطية", d_export:"صدّر الإعدادات", d_import:"استورد إعدادات", d_exported:"انحفظ الملف", d_imported:"انستوردت الإعدادات",
+  d_diag:"تشخيص المشاكل", d_diag_hint:"إذا شي ما زبط، انسخ هالسجل وابعتو.", d_showlog:"اعرض السجل", d_folder:"افتح مجلد البرنامج",
+  d_quit:"سكّر البرنامج نهائياً", d_about:"مبني على بروتوكول HID++ من لوجيتك. مستوحى من Mouser (رخصة MIT).",
+  saved:"انحفظ", err:"صار خطأ: ",
+  pr_title:"مستقبل Logi Bolt", pr_none:"ما في مستقبل Bolt موصول. ركّب المستقبل بمنفذ USB.", pr_pair:"ربط جهاز جديد", pr_slot:"خانة {0}",
+  pr_forget:"افصل", pr_forget_sure:"متأكد؟ اضغط مرة تانية", pr_empty:"ما في أجهزة مربوطة بهالمستقبل.",
+  pw_title:"ربط جهاز بـ \u2066Logi Bolt\u2069",
+  pw_s1:"شغّل الماوس من الزر اللي تحته.", pw_s2:"اختار قناة Easy-Switch فاضية واضغط عليها مطوّلاً ٣ ثواني.", pw_s3:"لما يصير الضو يرمش بسرعة، يعني الماوس جاهز للربط.",
+  pw_search:"عم دوّر على أجهزة بوضع الربط…", pw_found:"لقيت {0}، عم يربط…",
+  pw_clicks:"اضغط هالأزرار على {0} بالترتيب:", pw_both:"وبعدين اضغط الزرين يمين ويسار مع بعض.", pw_left:"يسار", pw_right:"يمين",
+  pw_type:"اكتب هالرقم على {0} وبعدين اضغط Enter:",
+  pw_done:"انربط {0} ✓", pw_done_b:"صار جاهز. الإعدادات بتنطبق عليه لحالها.",
+  pw_fail:"ما زبط الربط", pw_err_notfound:"ما لقيت جهاز بوضع الربط. تأكد إن الضو عم يرمش بسرعة وجرّب مرة تانية.",
+  pw_err_timeout:"خلص الوقت قبل ما يكمل الربط.", pw_err_failed:"المستقبل رفض الربط. جرّب مرة تانية، وقرّب الماوس من المستقبل.",
+  pw_err_noreceiver:"ما في مستقبل Bolt موصول.", pw_err_start:"المستقبل ما قبل يبلّش البحث. شيله وركّبه وجرّب مرة تانية.",
+  pw_cancel:"إلغاء", pw_close:"تمام", pw_retry:"جرّب مرة تانية",
+  ph_use:"استخدم صورة الماوس تبعك", ph_change:"غيّر الصورة", ph_arrange:"رتّب النقاط", ph_done:"خلصت", ph_reset:"رجّع الرسمة",
+  ph_hint:"صوّر الماوس من فوق على خلفية سادة. اسحب الصورة لتحركها، وكبّرها أو صغّرها، وبعدين اسحب كل نقطة لفوق الزر تبعها.", ph_size:"حجم الصورة",
+  on:"شغّال", off:"مطفي"
+},
+en:{
+  tag:"A light Logi Options+ alternative",
+  nav_buttons:"Buttons", nav_scroll:"Pointer & scroll", nav_apps:"Apps", nav_device:"Device & settings",
+  pause:"Pause button remapping",
+  online:"Connected", offline:"Asleep or disconnected", charging:"Charging", battery:"Battery",
+  conn_bolt:"Logi Bolt", conn_bluetooth:"Bluetooth", conn_unifying:"Unifying", conn_receiver:"Receiver",
+  nodev_t:"No mouse found right now.", nodev_b:"Make sure the Bolt receiver is plugged in and move the mouse to wake it. On Bluetooth, check it's paired with Windows.",
+  optplus:"Logi Options+ is running, and both apps will fight over the mouse.", optplus_btn:"Close Options+",
+  optplus_done:"Options+ closed",
+  ctx_all:"All apps", ctx_add:"New app",
+  b_gesture:"Gesture button", b_back:"Back button", b_forward:"Forward button", b_middle:"Middle button", b_top:"Wheel mode button", b_thumb:"Thumb wheel",
+  native_gesture:"Nothing", native_back:"Back", native_forward:"Forward", native_middle:"Middle click", native_top:"Switch wheel mode", native_thumb:"Horizontal scroll",
+  ed_for_all:"For all apps", ed_for:"Only in {0}",
+  ed_action:"What it does", ed_keys:"Shortcut", ed_keys_ph:"Click here, then press the keys", ed_keys_hint:"The keys stay held while you hold the button, e.g. Space for Photoshop's Hand tool.",
+  ed_win:"Add the Win key", ed_clear:"Clear",
+  ed_run:"Path or link", ed_run_ph:"C:\\Program Files\\...\\app.exe or https://...",
+  ed_gest:"Gestures", ed_gest_hint:"Hold the button, move the mouse, let go. A press without moving is the centre.",
+  g_up:"Up", g_down:"Down", g_left:"Left", g_right:"Right", g_click:"Press",
+  ed_preset:"Presets:", pre_desk:"Desktops", pre_media:"Media", pre_win:"Windows",
+  ed_unsupported:"This mouse doesn't have this button.",
+  th_action:"What the wheel does", th_sens:"Thumb wheel sensitivity", th_left:"Rolled back", th_right:"Rolled forward",
+  grp_general:"General", grp_windows:"Windows", grp_edit:"Editing", grp_browser:"Browser", grp_media:"Media", grp_mouse:"Mouse buttons", grp_tools:"Mouse tools", grp_custom:"Custom",
+  a_default:"Original function", a_none:"Disabled", a_keys:"Keyboard shortcut…", a_run:"Open an app or link…", a_gestures:"Gestures", a_inherit:"Same as all apps",
+  a_taskview:"Task view", a_showdesktop:"Show desktop", a_desktopPrev:"Previous desktop", a_desktopNext:"Next desktop",
+  a_alttab:"Switch windows", a_snapleft:"Snap window left", a_snapright:"Snap window right", a_maximize:"Maximize window", a_minimize:"Minimize window",
+  a_closewindow:"Close window", a_screenshot:"Screenshot", a_clipboard:"Clipboard history", a_emoji:"Emoji panel", a_explorer:"File Explorer", a_search:"Windows search",
+  a_copy:"Copy", a_cut:"Cut", a_paste:"Paste", a_undo:"Undo", a_redo:"Redo", a_selectall:"Select all", a_save:"Save", a_find:"Find",
+  a_browserback:"Back", a_browserfwd:"Forward", a_newtab:"New tab", a_closetab:"Close tab", a_reopentab:"Reopen closed tab", a_nexttab:"Next tab", a_prevtab:"Previous tab",
+  a_refresh:"Refresh", a_zoomin:"Zoom in", a_zoomout:"Zoom out", a_zoomreset:"Reset zoom",
+  a_playpause:"Play / pause", a_next:"Next track", a_prev:"Previous track", a_volup:"Volume up", a_voldown:"Volume down", a_mute:"Mute",
+  a_m_left:"Left click", a_m_right:"Right click", a_m_middle:"Middle click", a_m_back:"Back button", a_m_forward:"Forward button", a_m_double:"Double click",
+  a_precision:"Precision mode (slower while held)", a_dpicycle:"Cycle pointer speeds", a_smartshift:"Switch wheel mode",
+  w_default:"Horizontal scroll", w_zoom:"Zoom", w_volume:"Volume", w_tabs:"Switch tabs", w_brush:"Brush size ([ and ])",
+  w_undoredo:"Undo / redo", w_arrows:"Left / right arrows (timeline)", w_desktops:"Desktops", w_custom:"Two custom shortcuts…", w_inherit:"Same as all apps",
+  s_speed:"Pointer speed", s_dpi:"Speed (DPI)", s_presets:"Speed presets", s_presets_hint:"The speeds that “Cycle pointer speeds” steps through.",
+  s_precision:"Precision mode speed", s_precision_hint:"Used while you hold a button set to “Precision mode”. Handy for drawing and careful selection.",
+  s_wheel:"Main wheel", s_mode:"Wheel mode", m_smart:"SmartShift", m_ratchet:"Always ratchet", m_free:"Always free-spin",
+  s_sens:"SmartShift sensitivity", s_sens_hint:"Higher means you have to spin faster before the wheel lets go.",
+  s_torque:"Ratchet force", s_smooth:"Smooth scrolling", s_smooth_hint:"High-resolution scrolling in apps that support it.",
+  s_invert:"Reverse scroll direction", s_invert_thumb:"Reverse thumb wheel direction",
+  s_gest:"Gestures", s_gdist:"Distance before a move counts", s_unchanged:"Leave as it is",
+  p_title:"Settings for each app", p_hint:"When the app is in front, its buttons follow its own settings. Anything you don't change stays the same as all apps.",
+  p_empty:"No apps yet. Add Photoshop, Premiere or anything you work in.",
+  p_add:"Add an app", p_running:"Open right now:", p_manual:"Or type the file name:", p_manual_ph:"photoshop.exe", p_addbtn:"Add",
+  p_edit:"Edit its buttons", p_del:"Remove", p_changed:"{0} changes", p_none_changed:"No changes yet", p_loading:"Looking…",
+  d_device:"Mouse", d_hosts:"Easy-Switch", d_hosts_hint:"Pick a channel to move the mouse to another computer. It disconnects from this one.",
+  d_refresh:"Reconnect to the mouse", d_app:"App", d_lang:"Language", d_theme:"Appearance", th_dark:"Dark", th_light:"Light",
+  d_autostart:"Start with Windows", d_minimized:"Start in the tray", d_lowbat:"Low battery alert",
+  d_backup:"Backup", d_export:"Export settings", d_import:"Import settings", d_exported:"File saved", d_imported:"Settings imported",
+  d_diag:"Troubleshooting", d_diag_hint:"If something doesn't work, copy this log and send it.", d_showlog:"Show log", d_folder:"Open app folder",
+  d_quit:"Quit Mishk", d_about:"Talks to the mouse over Logitech's HID++ protocol. Inspired by Mouser (MIT licence).",
+  saved:"Saved", err:"Error: ",
+  pr_title:"Logi Bolt receiver", pr_none:"No Bolt receiver plugged in. Plug it into a USB port.", pr_pair:"Pair a new device", pr_slot:"Slot {0}",
+  pr_forget:"Unpair", pr_forget_sure:"Sure? Click again", pr_empty:"Nothing is paired with this receiver.",
+  pw_title:"Pair with Logi Bolt",
+  pw_s1:"Turn the mouse on with the switch underneath.", pw_s2:"Pick a free Easy-Switch channel and hold its button for 3 seconds.", pw_s3:"When the light blinks fast, the mouse is ready to pair.",
+  pw_search:"Looking for devices in pairing mode…", pw_found:"Found {0}, pairing…",
+  pw_clicks:"Press these buttons on {0}, in order:", pw_both:"Then press the left and right buttons together.", pw_left:"Left", pw_right:"Right",
+  pw_type:"Type this number on {0}, then press Enter:",
+  pw_done:"{0} is paired ✓", pw_done_b:"It's ready, and your settings apply to it automatically.",
+  pw_fail:"Pairing didn't work", pw_err_notfound:"No device in pairing mode was found. Check the light is blinking fast and try again.",
+  pw_err_timeout:"Time ran out before pairing finished.", pw_err_failed:"The receiver refused the pairing. Try again with the mouse close to the receiver.",
+  pw_err_noreceiver:"No Bolt receiver is plugged in.", pw_err_start:"The receiver didn't start searching. Unplug it, plug it back in and try again.",
+  pw_cancel:"Cancel", pw_close:"Done", pw_retry:"Try again",
+  ph_use:"Use a photo of your mouse", ph_change:"Change photo", ph_arrange:"Arrange dots", ph_done:"Done", ph_reset:"Back to the drawing",
+  ph_hint:"Shoot the mouse from above on a plain background. Drag the photo to move it, resize it, then drag each dot onto its button.", ph_size:"Photo size",
+  on:"On", off:"Off"
+}};
+let L = "ar";
+const t = (k, ...a) => { let s = (T[L][k] ?? T.en[k] ?? k); a.forEach((v,i)=> s = s.replace("{"+i+"}", v)); return s; };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = s => document.querySelector(s);
+const htx = (k, ...a) => esc(t(k, ...a)).replace(/\u2066(.*?)\u2069/g, '<bdi dir="ltr">$1</bdi>');
+
+/* ================= catalogue ================= */
+const CATALOG = [
+  ["grp_general", ["default","none"]],
+  ["grp_windows", ["builtin:taskview","builtin:showdesktop","builtin:desktopPrev","builtin:desktopNext","builtin:alttab","builtin:snapleft","builtin:snapright","builtin:maximize","builtin:minimize","builtin:closewindow","builtin:screenshot","builtin:clipboard","builtin:emoji","builtin:explorer","builtin:search"]],
+  ["grp_edit", ["builtin:copy","builtin:cut","builtin:paste","builtin:undo","builtin:redo","builtin:selectall","builtin:save","builtin:find"]],
+  ["grp_browser", ["builtin:browserback","builtin:browserfwd","builtin:newtab","builtin:closetab","builtin:reopentab","builtin:nexttab","builtin:prevtab","builtin:refresh","builtin:zoomin","builtin:zoomout","builtin:zoomreset"]],
+  ["grp_media", ["media:playpause","media:next","media:prev","media:volup","media:voldown","media:mute"]],
+  ["grp_mouse", ["mouse:left","mouse:right","mouse:middle","mouse:back","mouse:forward","mouse:double"]],
+  ["grp_tools", ["builtin:precision","builtin:dpicycle","builtin:smartshift"]],
+  ["grp_custom", ["keys","run"]],
+];
+const WHEEL = ["default","zoom","volume","tabs","brush","undoredo","arrows","desktops","custom"];
+const BTN_KEYS = ["gesture","back","forward","middle","top","thumb"];
+
+function actKey(a){ if(!a) return "inherit"; if(["builtin","media","mouse"].includes(a.type)) return a.type+":"+a.value; return a.type; }
+function keyAct(k){ const i=k.indexOf(":"); return i<0 ? {type:k} : {type:k.slice(0,i), value:k.slice(i+1)}; }
+function actLabel(a, btn){
+  if(!a || a.type==="inherit") return t("a_inherit");
+  switch(a.type){
+    case "default": return btn ? t("native_"+btn) : t("a_default");
+    case "none": return t("a_none");
+    case "keys": return a.value || t("a_keys");
+    case "run": return a.value ? a.value.split(/[\\/]/).filter(Boolean).pop() : t("a_run");
+    case "gestures": return t("a_gestures");
+    case "mouse": return t("a_m_"+a.value);
+    default: return t("a_"+a.value);
+  }
+}
+function wheelLabel(w){ if(!w || w.type==="inherit") return t("w_inherit"); if(w.type==="custom") return [w.left,w.right].filter(Boolean).join(" / ") || t("w_custom"); return t("w_"+w.type); }
+function options(cur, {gestures=false, inherit=false, keyOnly=false}={}){
+  let h = "";
+  if(inherit) h += `<option value="inherit"${cur==="inherit"?" selected":""}>${esc(t("a_inherit"))}</option>`;
+  for(const [g, list] of CATALOG){
+    let items = list.slice();
+    if(g==="grp_custom" && gestures) items.push("gestures");
+    h += `<optgroup label="${esc(t(g))}">` + items.map(k=>{
+      const lbl = k==="default"||k==="none"||k==="keys"||k==="run"||k==="gestures" ? t("a_"+k) : actLabel(keyAct(k));
+      return `<option value="${k}"${k===cur?" selected":""}>${esc(lbl)}</option>`;
+    }).join("") + `</optgroup>`;
+  }
+  return h;
+}
+
+/* ================= state & bridge ================= */
+let S = null;               // last state from the app
+const UI = { page:"buttons", ctx:"all", sel:"gesture", apps:null, log:"", photo:"", arrange:false };
+
+const mock = (() => {
+  const cfg = {lang:"ar",theme:"dark",buttons:{gesture:{type:"gestures",gestures:{click:{type:"builtin",value:"taskview"},up:{type:"builtin",value:"taskview"},down:{type:"builtin",value:"showdesktop"},left:{type:"builtin",value:"desktopPrev"},right:{type:"builtin",value:"desktopNext"}}},back:{type:"default"},forward:{type:"default"},middle:{type:"default"},top:{type:"default"}},
+    thumb:{type:"default"},thumbSensitivity:5,dpi:1600,precisionDpi:400,dpiPresets:[800,1600,3200],gestureDistance:60,lowBatteryAlert:true,startMinimized:false,paused:false,
+    profiles:[{id:"p1",name:"Photoshop",exe:"photoshop.exe",buttons:{back:{type:"keys",value:"Space"},forward:{type:"builtin",value:"precision"}},thumb:{type:"brush"}}]};
+  const dev = {key:"bolt#2",name:"MX Master 3S",conn:"bolt",online:true,ready:true,mouse:true,battery:25,charging:false,dpi:1600,dpiMin:200,dpiMax:8000,dpiStep:50,hasDpi:true,hasSmartShift:true,hasTorque:true,ssMode:"smart",ssSensitivity:10,ssTorque:50,hasHiRes:true,smoothScroll:true,invertScroll:false,hasThumb:true,invertThumb:false,hosts:3,curHost:0,buttons:["gesture","back","forward","middle","top"],gestures:true};
+  const st = {version:"1.0.0",devices:[{...dev, link:"bolt", slot:1}],config:cfg,optionsPlus:true,autostart:true,dataDir:"C:\\Users\\you\\AppData\\Roaming\\Mishk",
+    receivers:[{id:"bolt",kind:"bolt",name:"Logi Bolt",devices:1}], pairing:null};
+  return async (cmd, arg) => {
+    if(location.hash==="#nodev") st.devices=[];
+    switch(cmd){
+      case "state": return JSON.parse(JSON.stringify(st));
+      case "setConfig": st.config = JSON.parse(JSON.stringify(arg)); return JSON.parse(JSON.stringify(st));
+      case "apps": return [{exe:"photoshop.exe",title:"Adobe Photoshop 2026"},{exe:"chrome.exe",title:"Google Chrome"},{exe:"code.exe",title:"Visual Studio Code"},{exe:"adobe premiere pro.exe",title:"Premiere Pro"},{exe:"figma.exe",title:"Figma"}];
+      case "log": return "08:20:01.120 Mishk 1.0.0 starting\n08:20:01.420 [bolt#2] HID++ 4.5\n08:20:01.600 [bolt#2] gesture -> diverted+gesture";
+      case "quitOptionsPlus": st.optionsPlus=false; return 2;
+      case "setAutostart": st.autostart=arg; return arg;
+      case "exportConfig": return "C:\\Users\\you\\Documents\\Mishk-settings.json";
+      case "startPairing":
+        st.pairing = {active:true, stage:"discovering", name:"", kind:"", clicks:[], pressed:0};
+        setTimeout(()=>{ st.pairing = {active:true, stage:"pairing", name:"MX Master 3S", kind:"mouse", clicks:[], pressed:0}; window.__mishkPush(JSON.parse(JSON.stringify(st))); }, 900);
+        setTimeout(()=>{ st.pairing = {active:true, stage:"passkey", name:"MX Master 3S", kind:"mouse", passkey:"000613", clicks:["right","left","left","right","right","left","left","right","left","right"], pressed:3}; window.__mishkPush(JSON.parse(JSON.stringify(st))); }, 1800);
+        return true;
+      case "cancelPairing": case "clearPairing": st.pairing = null; return true;
+      case "unpair": st.devices = st.devices.filter(d=>d.key!==arg); return true;
+      case "photo": return st._photo || "";
+      case "setPhoto": st._photo = arg; st.config.mousePhoto = arg ? "mouse-photo.jpg" : ""; if(!arg){ st.config.photoSpots=null; st.config.photoScale=1; st.config.photoShift=[0,0]; } return JSON.parse(JSON.stringify(st));
+      default: return true;
+    }
+  };
+})();
+const api = (cmd, arg) => window.mishkCall ? window.mishkCall(cmd, arg === undefined ? null : arg) : mock(cmd, arg);
+
+let saveTimer = null, saving = false;
+function save(now){
+  clearTimeout(saveTimer);
+  saving = true;
+  saveTimer = setTimeout(async () => {
+    try {
+      const s = await api("setConfig", S.config);
+      S.devices = s.devices; S.autostart = s.autostart; S.optionsPlus = s.optionsPlus;
+      toast(t("saved"));
+      renderChrome();
+    } catch(e){ toast(t("err") + (e && e.message || e)); }
+    saving = false;
+  }, now ? 0 : 280);
+}
+
+let toastTimer;
+function toast(msg){ const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),1400); }
+
+window.__mishkPush = s => {
+  if(!S) return;
+  S.devices = s.devices; S.optionsPlus = s.optionsPlus; S.autostart = s.autostart;
+  S.pairing = s.pairing; S.receivers = s.receivers;
+  renderModal();
+  if(!saving){
+    // only fields the app itself may change
+    S.config.dpi = s.config.dpi; S.config.paused = s.config.paused;
+  }
+  renderChrome();
+  const a = document.activeElement;
+  const typing = a && (a.tagName==="INPUT" || a.tagName==="SELECT" || a.tagName==="TEXTAREA");
+  if(!typing && UI.page !== "apps") renderPage();
+};
+
+/* ================= helpers ================= */
+const dev = () => (S.devices||[]).find(d=>d.mouse) || null;
+const cfg = () => S.config;
+function profile(){ return UI.ctx==="all" ? null : cfg().profiles.find(p=>p.id===UI.ctx) || null; }
+function getAct(btn){
+  const p = profile();
+  if(btn==="thumb") return p ? (p.thumb || {type:"inherit"}) : cfg().thumb;
+  if(p) return p.buttons[btn] || {type:"inherit"};
+  return cfg().buttons[btn];
+}
+function setAct(btn, a){
+  const p = profile();
+  if(btn==="thumb"){ if(p) p.thumb = a; else cfg().thumb = a; }
+  else if(p){ if(a.type==="inherit") delete p.buttons[btn]; else p.buttons[btn] = a; }
+  else cfg().buttons[btn] = a;
+  save(); renderPage();
+}
+
+/* ================= chrome ================= */
+function renderChrome(){
+  L = cfg().lang === "en" ? "en" : "ar";
+  document.documentElement.lang = L; document.documentElement.dir = L==="ar" ? "rtl" : "ltr";
+  document.documentElement.dataset.theme = cfg().theme === "light" ? "light" : "dark";
+  $("#t-tag").innerHTML = htx("tag");
+  document.querySelectorAll(".navbtn").forEach(b => {
+    b.querySelector("span").textContent = t("nav_"+b.dataset.page);
+    b.toggleAttribute("aria-current", b.dataset.page===UI.page);
+    if(b.dataset.page===UI.page) b.setAttribute("aria-current","page");
+  });
+  $("#t-pause").textContent = t("pause");
+  $("#pause").checked = !!cfg().paused;
+  $("#ver").textContent = "Mishk " + S.version;
+
+  const d = dev();
+  let h = "";
+  if(d){
+    const pct = d.battery, cells = Math.max(0, Math.min(10, Math.round(pct/10)));
+    h = `<div><div class="devname">${esc(d.name)}</div>
+      <div class="devmeta"><span><i class="dot ${d.online?"on":""}"></i> ${esc(d.online?t("online"):t("offline"))}</span><span>${esc(t("conn_"+d.conn))}</span></div></div>`;
+    if(pct >= 0) h += `<div class="battery" title="${esc(t("battery"))}"><div><b class="num">${pct}%</b><span>${esc(d.charging?t("charging"):t("battery"))}</span></div>
+      <div class="cells ${pct<=15?"low":""}">${Array.from({length:10},(_,i)=>`<i class="${i<cells?"f":""}"></i>`).join("")}</div></div>`;
+  } else {
+    h = `<div><div class="devname">Mishk</div><div class="devmeta"><span><i class="dot"></i> ${esc(t("nodev_t"))}</span></div></div>`;
+  }
+  $("#hdr").innerHTML = h;
+  $("#banner").innerHTML = S.optionsPlus ? `<div class="banner"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17v.5"/></svg><p>${htx("optplus")}</p><button class="btn primary" id="killOpt">${htx("optplus_btn")}</button></div>` : "";
+  const k = $("#killOpt"); if(k) k.onclick = async () => { await api("quitOptionsPlus"); S.optionsPlus=false; toast(t("optplus_done")); renderChrome(); };
+}
+
+/* ================= pages ================= */
+function nodevCard(){
+  const hasBolt = (S.receivers||[]).some(r=>r.kind==="bolt");
+  return `<div class="nodev"><b>${esc(t("nodev_t"))}</b> ${esc(t("nodev_b"))}${hasBolt?` <div style="margin-top:10px"><button class="btn primary" data-pair="">${esc(t("pr_pair"))}</button></div>`:""}</div>`;
+}
+function renderPage(){
+  const el = $("#page");
+  if(UI.page==="buttons") el.innerHTML = pageButtons();
+  else if(UI.page==="scroll") el.innerHTML = pageScroll();
+  else if(UI.page==="apps") el.innerHTML = pageApps();
+  else el.innerHTML = pageDevice();
+  bind[UI.page]();
+}
+const bind = {};
+
+/* ---- buttons ---- */
+// Geometry of the schematic (viewBox 760 x 560). Hotspot, then the callout side and height.
+const HS = {
+  middle:  {x:395, y:122, side:"r", cy:118},
+  top:     {x:395, y:203, side:"r", cy:222},
+  thumb:   {x:262, y:246, side:"l", cy:170},
+  forward: {x:244, y:303, side:"l", cy:262},
+  back:    {x:246, y:337, side:"l", cy:354},
+  gesture: {x:228, y:424, side:"l", cy:446},
+};
+function knurl(x,y,w,h,n){ let s=""; for(let i=1;i<n;i++){ const yy=y+h*i/n; s+=`<line x1="${x+3}" x2="${x+w-3}" y1="${yy}" y2="${yy}" stroke="var(--knurl)" stroke-width="1.4"/>`; } return s; }
+function spot(k){
+  const c = cfg();
+  if(UI.photo && c.photoSpots && c.photoSpots[k]) { const [x,y] = c.photoSpots[k]; return {...HS[k], x, y}; }
+  return HS[k];
+}
+function photoBox(){
+  const c = cfg(), sc = c.photoScale || 1, [dx, dy] = c.photoShift || [0,0], w = 360*sc, h = 520*sc;
+  return {x: 380-w/2+dx, y: 280-h/2+dy, w, h};
+}
+function photoSVG(){
+  const b = photoBox();
+  return `<clipPath id="phclip"><rect x="0" y="0" width="760" height="560"/></clipPath><image id="phimg" clip-path="url(#phclip)" href="${UI.photo}" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" preserveAspectRatio="xMidYMid meet" style="${UI.arrange?"cursor:move":""}"/>`;
+}
+function placePhoto(){ const img = $("#phimg"), b = photoBox(); if(!img) return; img.setAttribute("x", b.x); img.setAttribute("y", b.y); img.setAttribute("width", b.w); img.setAttribute("height", b.h); }
+function mouseSVG(sel, has){
+  const leads = BTN_KEYS.map(k=>{
+    const p = spot(k); if(!has(k)) return "";
+    const ex = p.side==="r" ? 560 : 196, elbow = p.side==="r" ? Math.max(p.x+20, 470) : Math.min(p.x-20, 205);
+    return `<polyline data-lead="${k}" class="lead ${k===sel?"sel":""}" points="${p.x},${p.y} ${elbow},${p.cy} ${ex},${p.cy}"/>`;
+  }).join("");
+  const dots = BTN_KEYS.map(k=>{ const p=spot(k); if(!has(k)) return ""; return `<g class="hs" data-btn="${k}" data-spot="${k}">${UI.photo?`<circle class="halo" cx="${p.x}" cy="${p.y}" r="14"/>`:""}<circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/><circle class="hsdot ${k===sel?"sel":""}" cx="${p.x}" cy="${p.y}" r="${UI.photo?7:5.5}"/></g>`; }).join("");
+  if(UI.photo) return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">${photoSVG()}${leads}${dots}</svg>`;
+  return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">
+  <defs><linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--body-2)"/><stop offset="1" stop-color="var(--body)"/></linearGradient></defs>
+  <path d="M332 58C364 36 448 38 480 70C512 108 526 200 521 300C516 400 500 470 452 506C410 534 330 534 290 506C252 482 205 462 198 408C192 368 226 352 246 330C262 312 268 292 266 262C262 200 280 108 332 58Z" fill="url(#shell)" stroke="var(--line-2)" stroke-width="1.5"/>
+  <path d="M246 330C226 352 192 368 198 408C204 452 246 478 288 500" fill="none" stroke="var(--line-2)" stroke-width="1.2" stroke-dasharray="3 4"/>
+  <path d="M395 44V172M395 236V290" stroke="var(--line-2)" stroke-width="1.2"/>
+  <rect x="381" y="80" width="28" height="84" rx="13" fill="var(--bg)" stroke="var(--line-2)"/>
+  <rect x="385" y="86" width="20" height="72" rx="9" fill="var(--steel)" opacity=".55"/>${knurl(385,86,20,72,12)}
+  <rect x="385" y="186" width="20" height="34" rx="9" fill="var(--bg)" stroke="var(--line-2)"/>
+  <rect x="252" y="220" width="20" height="54" rx="9" fill="var(--steel)" opacity=".55" transform="rotate(-8 262 247)"/>
+  <g transform="rotate(-8 262 247)">${knurl(252,220,20,54,9)}</g>
+  <rect x="226" y="294" width="42" height="17" rx="8.5" fill="var(--bg)" stroke="var(--line-2)" transform="rotate(-14 247 302)"/>
+  <rect x="228" y="328" width="42" height="17" rx="8.5" fill="var(--bg)" stroke="var(--line-2)" transform="rotate(-14 249 336)"/>
+  <ellipse cx="228" cy="424" rx="16" ry="9" fill="var(--bg)" stroke="var(--line-2)" transform="rotate(-30 228 424)"/>
+  ${leads}${dots}</svg>`;
+}
+function pageButtons(){
+  const d = dev(), c = cfg();
+  const has = k => !d || !d.buttons ? true : (k==="thumb" ? d.hasThumb : d.buttons.includes(k));
+  if(!has(UI.sel)) UI.sel = BTN_KEYS.find(has) || "gesture";
+  let h = "";
+  if(!d) h += nodevCard();
+  h += `<div class="ctxbar" role="group"><button class="chip" data-ctx="all" aria-pressed="${UI.ctx==="all"}">${esc(t("ctx_all"))}</button>` +
+    c.profiles.map(p=>`<button class="chip" data-ctx="${esc(p.id)}" aria-pressed="${UI.ctx===p.id}">${esc(p.name)}</button>`).join("") +
+    `<button class="chip" id="ctxAdd">+ ${esc(t("ctx_add"))}</button></div>`;
+  const callouts = BTN_KEYS.filter(has).map(k=>{
+    const p = HS[k], a = getAct(k);
+    const lbl = k==="thumb" ? wheelLabel(a) : actLabel(a, k);
+    const inh = a && a.type==="inherit";
+    const left = p.side==="r" ? (560/760*100) : 0;
+    return `<button class="callout ${inh?"inherit":""}" data-btn="${k}" aria-pressed="${k===UI.sel}" style="left:${left}%;top:${p.cy/560*100}%"><small>${esc(t("b_"+k))}</small><span>${esc(lbl)}</span></button>`;
+  }).join("");
+  let bar = `<div class="phbar">`;
+  if(!UI.photo) bar += `<button class="btn ghost" id="phUse">${esc(t("ph_use"))}</button>`;
+  else if(UI.arrange) bar += `<div class="slider"><label for="phScale">${esc(t("ph_size"))}</label><input type="range" id="phScale" min="0.5" max="3" step="0.02" value="${c.photoScale||1}"></div><button class="btn primary" id="phDone">${esc(t("ph_done"))}</button>`;
+  else bar += `<button class="btn ghost" id="phArr">${esc(t("ph_arrange"))}</button><button class="btn ghost" id="phUse">${esc(t("ph_change"))}</button><button class="btn ghost danger" id="phReset">${esc(t("ph_reset"))}</button>`;
+  bar += `</div>`;
+  if(UI.arrange) bar += `<p class="hint">${esc(t("ph_hint"))}</p>`;
+  h += `<div class="btnpage"><div><div class="diagram ${d&&!d.online?"off":""} ${UI.arrange?"arrange":""} ${UI.photo?"photo":""}">${mouseSVG(UI.sel, has)}${callouts}</div>${bar}</div>${editor()}</div>`;
+  return h;
+}
+function editor(){
+  const k = UI.sel, a = getAct(k), p = profile();
+  const inherit = !!p;
+  let h = `<section class="editor" aria-label="${esc(t("b_"+k))}"><h3>${esc(t("b_"+k))}</h3><p class="sub">${esc(p ? t("ed_for", p.name) : t("ed_for_all"))}</p>`;
+  if(k==="thumb"){
+    const cur = a.type || "default";
+    h += `<div class="field"><label for="wsel">${esc(t("th_action"))}</label><select id="wsel">` +
+      (inherit?`<option value="inherit"${cur==="inherit"?" selected":""}>${esc(t("w_inherit"))}</option>`:"") +
+      WHEEL.map(w=>`<option value="${w}"${w===cur?" selected":""}>${esc(t("w_"+w))}</option>`).join("") + `</select></div>`;
+    if(cur==="custom"){
+      h += capture("wl", t("th_left"), a.left) + capture("wr", t("th_right"), a.right);
+    }
+    if(cur!=="default" && cur!=="inherit"){
+      h += `<div class="field"><label for="tsens">${esc(t("th_sens"))}</label><div class="slider"><input type="range" id="tsens" min="1" max="10" value="${cfg().thumbSensitivity}"><output class="num">${cfg().thumbSensitivity}</output></div></div>`;
+    }
+    return h + `</section>`;
+  }
+  const cur = actKey(a);
+  h += `<div class="field"><label for="asel">${esc(t("ed_action"))}</label><select id="asel">${options(cur,{gestures:k==="gesture"&&(dev()?.gestures!==false), inherit})}</select></div>`;
+  if(a.type==="keys") h += capture("kcap", t("ed_keys"), a.value) + `<p class="hint">${esc(t("ed_keys_hint"))}</p>`;
+  if(a.type==="run") h += `<div class="field"><label for="runp">${esc(t("ed_run"))}</label><input type="text" id="runp" dir="ltr" value="${esc(a.value||"")}" placeholder="${esc(t("ed_run_ph"))}"></div>`;
+  if(a.type==="gestures"){
+    const g = a.gestures;
+    const cell = dir => `<label class="gl" for="g-${dir}">${GICON[dir]}${esc(t("g_"+dir))}</label><select id="g-${dir}" data-g="${dir}">${options(actKey(g[dir]))}</select>`;
+    h += `<div class="field"><label>${esc(t("ed_gest"))}</label><div class="glist">${["click","up","down","left","right"].map(cell).join("")}</div>
+      <p class="hint">${esc(t("ed_gest_hint"))}</p>
+      <div class="ctxbar" style="margin-top:10px"><span class="hint" style="margin:0">${esc(t("ed_preset"))}</span>
+      <button class="chip" data-pre="desk">${esc(t("pre_desk"))}</button><button class="chip" data-pre="media">${esc(t("pre_media"))}</button><button class="chip" data-pre="win">${esc(t("pre_win"))}</button></div></div>`;
+    for(const dir of ["up","left","click","right","down"]) if(g[dir].type==="keys") h += capture("gk-"+dir, t("g_"+dir)+" · "+t("ed_keys"), g[dir].value);
+  }
+  return h + `</section>`;
+}
+const GA = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const GICON = {
+  click: GA('<circle cx="12" cy="12" r="4"/>'),
+  up: GA('<path d="M12 19V5M6 11l6-6 6 6"/>'),
+  down: GA('<path d="M12 5v14M6 13l6 6 6-6"/>'),
+  left: GA('<path d="M19 12H5M11 6l-6 6 6 6"/>'),
+  right: GA('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+};
+function capture(id, label, value){
+  const hasWin = /(^|\+)win\+/i.test(value||"");
+  return `<div class="field"><label for="${id}">${esc(label)}</label><div class="capture"><input type="text" readonly id="${id}" data-cap="${id}" value="${esc(value||"")}" placeholder="${esc(t("ed_keys_ph"))}"><button class="btn ghost" data-clear="${id}">${esc(t("ed_clear"))}</button></div>
+  <label class="wintog"><input type="checkbox" data-win="${id}" ${hasWin?"checked":""}> ${esc(t("ed_win"))}</label></div>`;
+}
+const CODE = {Space:"Space",Enter:"Enter",Escape:"Esc",Tab:"Tab",Backspace:"Backspace",Delete:"Delete",Insert:"Insert",Home:"Home",End:"End",PageUp:"PageUp",PageDown:"PageDown",
+  ArrowLeft:"Left",ArrowRight:"Right",ArrowUp:"Up",ArrowDown:"Down",BracketLeft:"[",BracketRight:"]",Semicolon:";",Quote:"'",Comma:",",Period:".",Slash:"/",Backslash:"\\",
+  Minus:"-",Equal:"=",Backquote:"`",PrintScreen:"PrintScreen",CapsLock:"CapsLock",ContextMenu:"Menu",NumpadMultiply:"Num*",NumpadAdd:"Num+",NumpadSubtract:"Num-",NumpadDecimal:"Num.",NumpadDivide:"Num/"};
+function comboFrom(e, win){
+  let main = null;
+  if(/^Key[A-Z]$/.test(e.code)) main = e.code.slice(3);
+  else if(/^Digit\d$/.test(e.code)) main = e.code.slice(5);
+  else if(/^Numpad\d$/.test(e.code)) main = "Num"+e.code.slice(6);
+  else if(/^F\d+$/.test(e.code)) main = e.code;
+  else if(CODE[e.code]) main = CODE[e.code];
+  const mods = [];
+  if(e.ctrlKey) mods.push("Ctrl"); if(e.shiftKey) mods.push("Shift"); if(e.altKey) mods.push("Alt"); if(e.metaKey || win) mods.push("Win");
+  return main ? [...mods, main].join("+") : null;
+}
+function setCap(id, val){
+  const a = getAct(UI.sel);
+  if(UI.sel==="thumb"){ const w={...a}; if(id==="wl") w.left=val; else w.right=val; setAct("thumb", w); return; }
+  if(id==="kcap"){ setAct(UI.sel, {type:"keys", value:val}); return; }
+  if(id.startsWith("gk-")){ const dir=id.slice(3); const na=JSON.parse(JSON.stringify(a)); na.gestures[dir]={type:"keys",value:val}; setAct(UI.sel, na); }
+}
+const PRESETS = {
+  desk:{click:"builtin:taskview",up:"builtin:taskview",down:"builtin:showdesktop",left:"builtin:desktopPrev",right:"builtin:desktopNext"},
+  media:{click:"media:playpause",up:"media:volup",down:"media:voldown",left:"media:prev",right:"media:next"},
+  win:{click:"builtin:taskview",up:"builtin:maximize",down:"builtin:minimize",left:"builtin:snapleft",right:"builtin:snapright"},
+};
+bind.buttons = () => {
+  document.querySelectorAll("[data-btn]").forEach(b=> b.onclick = () => { if(UI.arrange && b.tagName!=="BUTTON") return; UI.sel = b.dataset.btn; renderPage(); });
+  const pu = $("#phUse"); if(pu) pu.onclick = () => $("#photoFile").click();
+  const pa = $("#phArr"); if(pa) pa.onclick = () => { UI.arrange = true; renderPage(); };
+  const pd = $("#phDone"); if(pd) pd.onclick = () => { UI.arrange = false; save(true); renderPage(); };
+  const pr = $("#phReset"); if(pr) pr.onclick = async () => { const st = await api("setPhoto", ""); S.config = st.config; UI.photo = ""; UI.arrange = false; renderPage(); };
+  const ps = $("#phScale"); if(ps) ps.oninput = () => { cfg().photoScale = +ps.value; placePhoto(); save(); };
+  if(UI.arrange){
+    const svg = $("#dsvg");
+    const img = $("#phimg");
+    img.onpointerdown = ev => {
+      ev.preventDefault(); img.setPointerCapture(ev.pointerId);
+      const m = svg.getScreenCTM().inverse(), p0 = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m);
+      const [sx, sy] = cfg().photoShift || [0,0];
+      img.onpointermove = e => { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m); cfg().photoShift = [Math.round(sx + p.x - p0.x), Math.round(sy + p.y - p0.y)]; placePhoto(); };
+      img.onpointerup = () => { img.onpointermove = null; save(); };
+    };
+    svg.querySelectorAll("[data-spot]").forEach(g => g.onpointerdown = ev => {
+      ev.preventDefault(); const k = g.dataset.spot; g.setPointerCapture(ev.pointerId);
+      const m = svg.getScreenCTM().inverse();
+      const move = e => {
+        const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(m);
+        const x = Math.max(200, Math.min(560, Math.round(pt.x))), y = Math.max(10, Math.min(550, Math.round(pt.y)));
+        const c = cfg(); c.photoSpots = c.photoSpots || {}; c.photoSpots[k] = [x, y];
+        g.querySelectorAll("circle").forEach(ci => { ci.setAttribute("cx", x); ci.setAttribute("cy", y); });
+        const p = HS[k], line = svg.querySelector(`polyline[data-lead="${k}"]`);
+        if(line){ const ex = p.side==="r" ? 560 : 196, el = p.side==="r" ? Math.max(x+20, 470) : Math.min(x-20, 205); line.setAttribute("points", `${x},${y} ${el},${p.cy} ${ex},${p.cy}`); }
+      };
+      g.onpointermove = move;
+      g.onpointerup = () => { g.onpointermove = null; save(); };
+    });
+  }
+  document.querySelectorAll("[data-ctx]").forEach(b=> b.onclick = () => { UI.ctx = b.dataset.ctx; renderPage(); });
+  $("#ctxAdd").onclick = () => { UI.page = "apps"; renderChrome(); renderPage(); };
+  const as = $("#asel");
+  if(as) as.onchange = () => {
+    const v = as.value; let a;
+    if(v==="gestures") a = {type:"gestures", gestures: expand(PRESETS.desk)};
+    else a = keyAct(v);
+    if(a.type==="keys") a.value = ""; if(a.type==="run") a.value = "";
+    setAct(UI.sel, a);
+    if(a.type==="keys") setTimeout(()=>$("#kcap")?.focus(), 30);
+  };
+  const ws = $("#wsel"); if(ws) ws.onchange = () => setAct("thumb", {type:ws.value});
+  const ts = $("#tsens"); if(ts) ts.oninput = () => { cfg().thumbSensitivity = +ts.value; ts.nextElementSibling.value = ts.value; save(); };
+  const rp = $("#runp"); if(rp) rp.onchange = () => { const a = getAct(UI.sel); setAct(UI.sel, {type:"run", value:rp.value.trim()}); };
+  document.querySelectorAll("[data-g]").forEach(s => s.onchange = () => {
+    const a = JSON.parse(JSON.stringify(getAct(UI.sel))); const na = keyAct(s.value); if(na.type==="keys") na.value="";
+    a.gestures[s.dataset.g] = na; setAct(UI.sel, a);
+  });
+  document.querySelectorAll("[data-pre]").forEach(b => b.onclick = () => setAct(UI.sel, {type:"gestures", gestures: expand(PRESETS[b.dataset.pre])}));
+  document.querySelectorAll("[data-cap]").forEach(inp => {
+    inp.onfocus = () => inp.classList.add("rec");
+    inp.onblur = () => inp.classList.remove("rec");
+    inp.onkeydown = e => {
+      e.preventDefault(); e.stopPropagation();
+      const win = document.querySelector(`[data-win="${inp.id}"]`)?.checked;
+      const c = comboFrom(e, win);
+      if(c){ inp.value = c; setCap(inp.id, c); }
+    };
+  });
+  document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => setCap(b.dataset.clear, ""));
+  document.querySelectorAll("[data-win]").forEach(cb => cb.onchange = () => {
+    const id = cb.dataset.win, inp = $("#"+CSS.escape(id)); let v = inp.value.replace(/(^|\+)Win(?=\+)/i, "").replace(/^\+/, "");
+    if(cb.checked && v) { const parts=v.split("+"); const main=parts.pop(); v=[...parts.filter(x=>x!=="Win"),"Win",main].join("+"); }
+    setCap(id, v);
+  });
+};
+function expand(p){ const o={}; for(const k in p) o[k]=keyAct(p[k]); return o; }
+
+/* ---- scroll ---- */
+function sliderRow(id, label, val, min, max, step, unit, hint){
+  return `<div class="slider"><div><label for="${id}"><b style="font-weight:500">${esc(label)}</b></label></div><output class="num" id="${id}-o">${val}${unit}</output>
+    <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" style="grid-column:1/-1"><div class="ends num" style="grid-column:1/-1"><span>${min}</span><span>${max}</span></div>${hint?`<p class="hint" style="grid-column:1/-1;margin:0">${esc(hint)}</p>`:""}</div>`;
+}
+function pageScroll(){
+  const d = dev() || {dpiMin:200,dpiMax:8000,dpiStep:50,dpi:cfg().dpi||1000,hasSmartShift:true,hasTorque:true,hasHiRes:true,hasThumb:true,ssMode:"smart",ssSensitivity:10,ssTorque:50};
+  const c = cfg();
+  const ss = c.smartShift || {mode:d.ssMode||"smart", sensitivity:d.ssSensitivity && d.ssSensitivity<=50 ? d.ssSensitivity : 10, torque:d.ssTorque||50};
+  const dpi = c.dpi || d.dpi || 1000;
+  let h = `<div class="section">`;
+  if(!dev()) h += nodevCard();
+  h += `<h2>${esc(t("s_speed"))}</h2>` + sliderRow("dpi", t("s_dpi"), dpi, d.dpiMin, d.dpiMax, d.dpiStep, "");
+  h += `<div class="row"><div class="lbl"><b>${esc(t("s_presets"))}</b><p class="hint">${esc(t("s_presets_hint"))}</p></div>
+    <div style="display:flex;gap:6px;direction:ltr">${[0,1,2].map(i=>`<input type="text" class="num" data-preset="${i}" value="${c.dpiPresets[i]??""}" style="width:76px;text-align:center">`).join("")}</div></div>`;
+  h += sliderRow("pdpi", t("s_precision"), c.precisionDpi, d.dpiMin, 2000, d.dpiStep, "", t("s_precision_hint"));
+  if(d.hasSmartShift){
+    h += `<h2>${esc(t("s_wheel"))}</h2><div class="row"><div class="lbl"><b>${esc(t("s_mode"))}</b></div><div class="seg" role="group">` +
+      ["smart","ratchet","free"].map(m=>`<button data-ss="${m}" aria-pressed="${ss.mode===m}">${esc(t("m_"+m))}</button>`).join("") + `</div></div>`;
+    if(ss.mode==="smart") h += sliderRow("sens", t("s_sens"), ss.sensitivity||10, 1, 50, 1, "", t("s_sens_hint"));
+    if(d.hasTorque && ss.mode!=="free") h += sliderRow("torque", t("s_torque"), ss.torque||50, 1, 100, 1, "%");
+  }
+  if(d.hasHiRes){
+    h += toggleRow("smooth", t("s_smooth"), c.smoothScroll ?? d.smoothScroll, t("s_smooth_hint"));
+    h += toggleRow("inv", t("s_invert"), c.invertScroll ?? d.invertScroll);
+  }
+  if(d.hasThumb) h += toggleRow("invt", t("s_invert_thumb"), c.invertThumb ?? d.invertThumb);
+  h += `<h2>${esc(t("s_gest"))}</h2>` + sliderRow("gdist", t("s_gdist"), c.gestureDistance, 20, 200, 5, "");
+  return h + `</div>`;
+}
+function toggleRow(id, label, on, hint){
+  return `<div class="row"><label class="lbl" for="${id}"><b>${esc(label)}</b>${hint?`<p class="hint">${esc(hint)}</p>`:""}</label><input type="checkbox" class="switch" id="${id}" ${on?"checked":""}></div>`;
+}
+bind.scroll = () => {
+  const c = cfg(), d = dev();
+  const live = (id, fn, unit="") => { const el=$("#"+id); if(!el) return; el.oninput = () => { $("#"+id+"-o").textContent = el.value+unit; fn(+el.value); save(); }; };
+  live("dpi", v => c.dpi = v);
+  live("pdpi", v => c.precisionDpi = v);
+  live("gdist", v => c.gestureDistance = v);
+  const ssCur = () => c.smartShift || (c.smartShift = {mode:d?.ssMode||"smart", sensitivity:(d&&d.ssSensitivity<=50?d.ssSensitivity:10)||10, torque:d?.ssTorque||50});
+  live("sens", v => ssCur().sensitivity = v);
+  live("torque", v => ssCur().torque = v, "%");
+  document.querySelectorAll("[data-ss]").forEach(b => b.onclick = () => { ssCur().mode = b.dataset.ss; save(); renderPage(); });
+  const tog = (id, key) => { const el=$("#"+id); if(el) el.onchange = () => { c[key] = el.checked; save(); }; };
+  tog("smooth","smoothScroll"); tog("inv","invertScroll"); tog("invt","invertThumb");
+  document.querySelectorAll("[data-preset]").forEach(inp => inp.onchange = () => {
+    const v = parseInt(inp.value,10); const arr = c.dpiPresets.slice(); if(v>=100) arr[+inp.dataset.preset]=v; else arr.splice(+inp.dataset.preset,1);
+    c.dpiPresets = arr.filter(x=>x>0); save(); renderPage();
+  });
+};
+
+/* ---- apps ---- */
+function pageApps(){
+  const c = cfg();
+  let h = `<div class="section"><h2>${esc(t("p_title"))}</h2><p class="hint" style="margin-bottom:16px">${esc(t("p_hint"))}</p><div class="plist">`;
+  if(!c.profiles.length) h += `<div class="empty">${esc(t("p_empty"))}</div>`;
+  for(const p of c.profiles){
+    const n = Object.keys(p.buttons||{}).length + (p.thumb && p.thumb.type!=="inherit" ? 1 : 0);
+    h += `<div class="prow"><div class="ico">${esc((p.name||"?").trim().charAt(0).toUpperCase())}</div><div class="nm"><b>${esc(p.name)}</b><small>${esc(p.exe)}</small>
+      <div class="hint" style="margin:0">${esc(n?t("p_changed", n):t("p_none_changed"))}</div></div>
+      <button class="btn" data-edit="${esc(p.id)}">${esc(t("p_edit"))}</button><button class="btn ghost danger" data-del="${esc(p.id)}">${esc(t("p_del"))}</button></div>`;
+  }
+  h += `</div><h2>${esc(t("p_add"))}</h2><p class="hint">${esc(t("p_running"))}</p><div class="pick" id="apps">${UI.apps===null?`<span class="hint">${esc(t("p_loading"))}</span>`:
+    UI.apps.filter(a=>!c.profiles.some(p=>p.exe===a.exe)).map(a=>`<button class="chip" data-addexe="${esc(a.exe)}" title="${esc(a.title)}">${esc(prettyName(a))}</button>`).join("")}</div>
+    <div class="row" style="border:0"><label class="lbl" for="manexe">${esc(t("p_manual"))}</label><input type="text" id="manexe" dir="ltr" placeholder="${esc(t("p_manual_ph"))}" style="max-width:240px"><button class="btn" id="manadd">${esc(t("p_addbtn"))}</button></div></div>`;
+  return h;
+}
+function prettyName(a){
+  const known = {"photoshop.exe":"Photoshop","illustrator.exe":"Illustrator","adobe premiere pro.exe":"Premiere Pro","afterfx.exe":"After Effects","figma.exe":"Figma","chrome.exe":"Chrome","msedge.exe":"Edge","firefox.exe":"Firefox","code.exe":"VS Code","resolve.exe":"DaVinci Resolve","lightroom.exe":"Lightroom","indesign.exe":"InDesign","blender.exe":"Blender","excel.exe":"Excel","winword.exe":"Word","powerpnt.exe":"PowerPoint","spotify.exe":"Spotify","explorer.exe":"File Explorer"};
+  if(known[a.exe]) return known[a.exe];
+  const b = a.exe.replace(/\.exe$/,""); return b.charAt(0).toUpperCase()+b.slice(1);
+}
+function addProfile(exe, name){
+  exe = exe.trim().toLowerCase(); if(!exe) return; if(!exe.endsWith(".exe")) exe += ".exe";
+  const id = "p" + Date.now().toString(36);
+  cfg().profiles.push({id, name: name || prettyName({exe}), exe, buttons:{}, thumb:{type:"inherit"}});
+  save(); UI.ctx = id; UI.page = "buttons"; renderChrome(); renderPage();
+}
+bind.apps = () => {
+  if(UI.apps===null) api("apps").then(a => { UI.apps = a || []; if(UI.page==="apps") renderPage(); }).catch(()=>{ UI.apps=[]; });
+  document.querySelectorAll("[data-addexe]").forEach(b => b.onclick = () => { const a = UI.apps.find(x=>x.exe===b.dataset.addexe); addProfile(a.exe, prettyName(a)); });
+  $("#manadd").onclick = () => addProfile($("#manexe").value);
+  $("#manexe").onkeydown = e => { if(e.key==="Enter") addProfile(e.target.value); };
+  document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { UI.ctx = b.dataset.edit; UI.page = "buttons"; renderChrome(); renderPage(); });
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { cfg().profiles = cfg().profiles.filter(p=>p.id!==b.dataset.del); if(UI.ctx===b.dataset.del) UI.ctx="all"; save(); renderPage(); });
+};
+
+/* ---- device ---- */
+function pageDevice(){
+  const d = dev(), c = cfg();
+  let h = `<div class="section">`;
+  h += `<h2>${esc(t("d_device"))}</h2>`;
+  if(!d) h += nodevCard();
+  if(d && d.hosts > 1) h += `<div class="row"><div class="lbl"><b>${esc(t("d_hosts"))}</b><p class="hint">${esc(t("d_hosts_hint"))}</p></div><div class="hosts">` +
+    Array.from({length:d.hosts},(_,i)=>`<button class="host num" data-host="${i}" aria-pressed="${i===d.curHost}">${i+1}</button>`).join("") + `</div></div>`;
+  h += `<div class="row"><div class="lbl"><b>${esc(t("d_refresh"))}</b></div><button class="btn" id="refresh">${esc(t("d_refresh"))}</button></div>`;
+  h += `<h2>${htx("pr_title")}</h2>`;
+  const recs = (S.receivers||[]).filter(r=>r.kind==="bolt");
+  if(!recs.length) h += `<p class="hint">${htx("pr_none")}</p>`;
+  for(const r of recs){
+    const list = (S.devices||[]).filter(x=>x.link===r.id);
+    h += `<div class="dlist">` + (list.length ? list.map(x=>`<div class="prow"><div class="ico">${x.mouse?"🖱":"⌨"}</div><div class="nm"><b>${esc(x.name)}</b><small>${esc(t("pr_slot", x.slot))} · ${esc(x.online?t("online"):t("offline"))}</small></div>
+      <button class="btn ghost danger" data-unpair="${esc(x.key)}">${esc(t("pr_forget"))}</button></div>`).join("") : `<p class="hint">${esc(t("pr_empty"))}</p>`) + `</div>
+      <div class="row" style="border:0"><div class="lbl"></div><button class="btn primary" data-pair="${esc(r.id)}">${esc(t("pr_pair"))}</button></div>`;
+  }
+  h += `<h2>${esc(t("d_app"))}</h2>`;
+  h += `<div class="row"><div class="lbl"><b>${esc(t("d_lang"))}</b></div><div class="seg"><button data-lang="ar" aria-pressed="${L==="ar"}">العربية</button><button data-lang="en" aria-pressed="${L==="en"}">English</button></div></div>`;
+  h += `<div class="row"><div class="lbl"><b>${esc(t("d_theme"))}</b></div><div class="seg"><button data-theme-set="dark" aria-pressed="${c.theme!=="light"}">${esc(t("th_dark"))}</button><button data-theme-set="light" aria-pressed="${c.theme==="light"}">${esc(t("th_light"))}</button></div></div>`;
+  h += toggleRow("auto", t("d_autostart"), S.autostart) + toggleRow("mini", t("d_minimized"), c.startMinimized) + toggleRow("lowbat", t("d_lowbat"), c.lowBatteryAlert);
+  h += `<h2>${esc(t("d_backup"))}</h2><div class="row"><div class="lbl"></div><button class="btn" id="exp">${esc(t("d_export"))}</button><button class="btn" id="imp">${esc(t("d_import"))}</button></div>`;
+  h += `<h2>${esc(t("d_diag"))}</h2><p class="hint">${esc(t("d_diag_hint"))}</p><div class="row" style="border:0"><div class="lbl"></div><button class="btn" id="showlog">${esc(t("d_showlog"))}</button><button class="btn" id="folder">${esc(t("d_folder"))}</button></div>`;
+  if(UI.log) h += `<textarea class="log" readonly>${esc(UI.log)}</textarea>`;
+  h += `<div class="row" style="margin-top:20px"><p class="hint lbl" style="margin:0">${esc(t("d_about"))}</p><button class="btn ghost danger" id="quit">${esc(t("d_quit"))}</button></div>`;
+  return h + `</div>`;
+}
+bind.device = () => {
+  const c = cfg();
+  document.querySelectorAll("[data-unpair]").forEach(b => b.onclick = () => {
+    if(b.dataset.sure){ api("unpair", b.dataset.unpair); b.disabled = true; return; }
+    b.dataset.sure = "1"; b.textContent = t("pr_forget_sure");
+    setTimeout(()=>{ if(b.isConnected){ delete b.dataset.sure; b.textContent = t("pr_forget"); } }, 4000);
+  });
+  document.querySelectorAll("[data-host]").forEach(b => b.onclick = () => api("switchHost", {key: dev().key, host: +b.dataset.host}));
+  $("#refresh").onclick = () => { api("refresh"); toast("…"); };
+  document.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { c.lang = b.dataset.lang; save(true); renderChrome(); renderPage(); });
+  document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => { c.theme = b.dataset.themeSet; save(true); renderChrome(); renderPage(); });
+  $("#auto").onchange = async e => { await api("setAutostart", e.target.checked); S.autostart = e.target.checked; toast(t("saved")); };
+  $("#mini").onchange = e => { c.startMinimized = e.target.checked; save(); };
+  $("#lowbat").onchange = e => { c.lowBatteryAlert = e.target.checked; save(); };
+  $("#exp").onclick = async () => { try{ await api("exportConfig"); toast(t("d_exported")); }catch(e){ toast(t("err")+e); } };
+  $("#imp").onclick = () => $("#importFile").click();
+  $("#showlog").onclick = async () => { UI.log = await api("log") || " "; renderPage(); };
+  $("#folder").onclick = () => api("openDataFolder");
+  $("#quit").onclick = () => api("quit");
+};
+$("#importFile").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try { const s = await api("importConfig", await f.text()); S = s; toast(t("d_imported")); renderChrome(); renderPage(); }
+  catch(err){ toast(t("err") + (err.message||err)); }
+  e.target.value = "";
+};
+
+// Where each button usually sits on a top-down photo of an MX Master,
+// as a fraction of the mouse's own outline (x from its left edge, y from its front).
+const PHOTO_SPOTS = {middle:[.390,.063], top:[.477,.166], thumb:[.207,.336], forward:[.154,.380], back:[.174,.435], gesture:[.077,.711]};
+
+// Cut away a plain background (transparent, white or any flat colour) and crop to the mouse.
+function cutOut(img){
+  const cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+  const cx = cv.getContext("2d", {willReadFrequently:true}); cx.drawImage(img, 0, 0);
+  const W = cv.width, H = cv.height, id = cx.getImageData(0, 0, W, H), d = id.data;
+  const at = (x,y) => (y*W + x)*4;
+  const corners = [at(0,0), at(W-1,0), at(0,H-1), at(W-1,H-1)];
+  const transparent = corners.some(i => d[i+3] < 200);
+  if(!transparent){
+    const ref = corners.map(i => [d[i],d[i+1],d[i+2]]);
+    const flat = ref.every(c => Math.abs(c[0]-ref[0][0]) + Math.abs(c[1]-ref[0][1]) + Math.abs(c[2]-ref[0][2]) < 60);
+    if(flat){
+      const [br,bgc,bb] = ref[0], tol = 48;
+      const seen = new Uint8Array(W*H), stack = [];
+      for(let x=0;x<W;x++){ stack.push(x, (H-1)*W + x); }
+      for(let y=0;y<H;y++){ stack.push(y*W, y*W + W-1); }
+      while(stack.length){
+        const p = stack.pop(); if(seen[p]) continue; seen[p] = 1;
+        const i = p*4, diff = Math.abs(d[i]-br) + Math.abs(d[i+1]-bgc) + Math.abs(d[i+2]-bb);
+        if(diff > tol) continue;
+        d[i+3] = diff < tol/2 ? 0 : Math.round(255 * (diff - tol/2) / (tol/2));
+        const x = p % W, y = (p - x) / W;
+        if(x>0) stack.push(p-1); if(x<W-1) stack.push(p+1); if(y>0) stack.push(p-W); if(y<H-1) stack.push(p+W);
+      }
+      cx.putImageData(id, 0, 0);
+    }
+  }
+  // crop to what is left
+  let x0=W, y0=H, x1=-1, y1=-1;
+  for(let y=0;y<H;y+=2) for(let x=0;x<W;x+=2){ if(d[at(x,y)+3] > 24){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+  if(x1 < 0 || (x1-x0) < W*0.05){ x0=0; y0=0; x1=W-1; y1=H-1; }
+  const cw = x1-x0+1, ch = y1-y0+1, k = Math.min(1, 1400/Math.max(cw,ch));
+  const out = document.createElement("canvas"); out.width = Math.round(cw*k); out.height = Math.round(ch*k);
+  out.getContext("2d").drawImage(cv, x0, y0, cw, ch, 0, 0, out.width, out.height);
+  const cut = transparent || out.toDataURL !== undefined && x1 - x0 + 1 < W;
+  return {url: out.toDataURL("image/png"), w: out.width, h: out.height};
+}
+function defaultSpots(w, h){
+  const b = photoBox(), r = Math.min(b.w / w, b.h / h), dw = w*r, dh = h*r, ox = b.x + (b.w-dw)/2, oy = b.y + (b.h-dh)/2;
+  const o = {}; for(const k in PHOTO_SPOTS){ const [fx,fy] = PHOTO_SPOTS[k]; o[k] = [Math.round(ox + fx*dw), Math.round(oy + fy*dh)]; }
+  return o;
+}
+$("#photoFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  try {
+    const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("image")); i.src = url; });
+    const c = cutOut(img);
+    const st = await api("setPhoto", c.url);
+    S.config = st.config; UI.photo = c.url;
+    cfg().photoScale = 1; cfg().photoShift = [0,0]; cfg().photoSpots = defaultSpots(c.w, c.h);
+    save(true); UI.arrange = true; renderPage();
+  } catch(err){ toast(t("err") + (err.message||err)); }
+};
+
+/* ================= pairing ================= */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-pair]"); if(!b) return;
+  S.pairing = {active:true, stage:"discovering", clicks:[], pressed:0};
+  renderModal();
+  api("startPairing", b.dataset.pair || "");
+});
+const MOUSE_BTN = side => `<svg viewBox="0 0 30 38" aria-hidden="true"><path d="M15 2C8 2 3 7 3 14v10c0 7 5 12 12 12s12-5 12-12V14C27 7 22 2 15 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15 2v14M3 16h24" stroke="currentColor" stroke-width="1.4"/><path d="${side==="left"?"M4.5 15V14C4.5 8 9 3.5 14 3.4V15Z":"M25.5 15V14C25.5 8 21 3.5 16 3.4V15Z"}" fill="var(--amber)"/></svg>`;
+function renderModal(){
+  const el = $("#modal"), p = S && S.pairing;
+  if(!p || p.stage==="cancelled"){ el.innerHTML = ""; return; }
+  const name = p.name || "MX Master 3S";
+  let body = "", acts = "";
+  const cancel = `<button class="btn" id="pwCancel">${esc(t("pw_cancel"))}</button>`;
+  switch(p.stage){
+    case "discovering":
+      body = `<ol class="steps"><li>${esc(t("pw_s1"))}</li><li>${esc(t("pw_s2"))}</li><li>${esc(t("pw_s3"))}</li></ol>
+        <div class="wait"><span class="spin"></span>${esc(t("pw_search"))}</div>`;
+      acts = cancel; break;
+    case "pairing":
+      body = `<div class="wait"><span class="spin"></span>${esc(t("pw_found", name))}</div>`; acts = cancel; break;
+    case "passkey":
+      if(p.keyboard){
+        body = `<p>${esc(t("pw_type", name))}</p><div class="code num">${esc(p.passkey)}</div>`;
+      } else {
+        body = `<p>${esc(t("pw_clicks", name))}</p><div class="clicks">` + (p.clicks||[]).map((c,i)=>
+          `<div class="click ${i<p.pressed?"done":""} ${i===p.pressed?"next":""}">${MOUSE_BTN(c)}${esc(t(c==="left"?"pw_left":"pw_right"))}<small class="num">${i+1}</small></div>`).join("") +
+          `</div><p class="hint">${esc(t("pw_both"))}</p>`;
+      }
+      acts = cancel; break;
+    case "done":
+      body = `<div class="ok-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg></div><p style="font-size:16px;font-weight:600;margin:0 0 4px">${esc(t("pw_done", name))}</p><p class="hint">${esc(t("pw_done_b"))}</p>`;
+      acts = `<button class="btn primary" id="pwClose">${esc(t("pw_close"))}</button>`; break;
+    default:
+      body = `<p style="font-weight:600;margin:0 0 6px">${esc(t("pw_fail"))}</p><p class="hint">${esc(t("pw_err_"+(p.error||"failed")))}</p>`;
+      acts = `<button class="btn" id="pwClose">${esc(t("pw_close"))}</button><button class="btn primary" data-pair="${esc(p.link||"")}">${esc(t("pw_retry"))}</button>`;
+  }
+  el.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwT"><div class="dialog"><h3 id="pwT">${htx("pw_title")}</h3>${body}<div class="acts">${acts}</div></div></div>`;
+  const c = $("#pwCancel"); if(c) c.onclick = () => { api("cancelPairing"); S.pairing = null; renderModal(); };
+  const x = $("#pwClose"); if(x) x.onclick = () => { api("clearPairing"); S.pairing = null; renderModal(); renderPage(); };
+}
+
+/* ================= start ================= */
+document.querySelectorAll(".navbtn").forEach(b => b.onclick = () => { UI.page = b.dataset.page; if(UI.page==="apps") UI.apps = null; renderChrome(); renderPage(); $("#page").scrollTop = 0; });
+$("#pause").onchange = e => { cfg().paused = e.target.checked; save(true); };
+document.addEventListener("contextmenu", e => { if(!e.target.closest("textarea,input")) e.preventDefault(); });
+
+(async function start(){
+  S = await api("state");
+  try { UI.photo = (await api("photo")) || ""; } catch(e){ UI.photo = ""; }
+  if(location.hash.startsWith("#page=")) UI.page = location.hash.slice(6);
+  if(location.hash==="#en") S.config.lang = "en";
+  if(location.hash==="#light") S.config.theme = "light";
+  renderChrome(); renderPage(); renderModal();
+})();
+</script>
+</body>
+</html>
