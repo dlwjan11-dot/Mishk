@@ -17,6 +17,7 @@ type KeyCombo []uint16 // modifiers first, then the main key
 
 var vkNames = map[string]uint16{
 	"ctrl": 0x11, "control": 0x11, "shift": 0x10, "alt": 0x12, "win": 0x5B, "meta": 0x5B,
+	"cmd": 0x5B, "command": 0x5B, "option": 0x12, "opt": 0x12,
 	"tab": 0x09, "enter": 0x0D, "return": 0x0D, "esc": 0x1B, "escape": 0x1B, "space": 0x20,
 	"backspace": 0x08, "delete": 0x2E, "del": 0x2E, "insert": 0x2D, "ins": 0x2D,
 	"home": 0x24, "end": 0x23, "pageup": 0x21, "pgup": 0x21, "pagedown": 0x22, "pgdn": 0x22,
@@ -116,6 +117,9 @@ func tapKeys(a Actuator, s string) {
 }
 
 // Built-in actions that are just shortcuts.
+// zoomModVK is held while scrolling to zoom (Ctrl on Windows, Command on macOS).
+var zoomModVK uint16 = 0x11
+
 var builtinKeys = map[string]string{
 	"taskview":     "Win+Tab",
 	"showdesktop":  "Win+D",
@@ -242,9 +246,9 @@ func thumbStep(w WheelAction, dir int, a Actuator) {
 	}
 	switch w.Type {
 	case "zoom":
-		a.Key(0x11, true)
+		a.Key(zoomModVK, true)
 		a.Wheel(120*dir, false)
-		a.Key(0x11, false)
+		a.Key(zoomModVK, false)
 	case "volume":
 		pick("VolumeDown", "VolumeUp")
 	case "tabs":
@@ -252,11 +256,11 @@ func thumbStep(w WheelAction, dir int, a Actuator) {
 	case "brush":
 		pick("[", "]")
 	case "undoredo":
-		pick("Ctrl+Z", "Ctrl+Y")
+		pick(builtinKeys["undo"], builtinKeys["redo"])
 	case "arrows":
 		pick("Left", "Right")
 	case "desktops":
-		pick("Ctrl+Win+Left", "Ctrl+Win+Right")
+		pick(builtinKeys["desktopPrev"], builtinKeys["desktopNext"])
 	case "custom":
 		if dir < 0 && w.Left != "" {
 			tapKeys(a, w.Left)

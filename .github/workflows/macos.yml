@@ -4,9 +4,57 @@ on:
     branches: [main]
     paths-ignore: ["download/**", "docs/**", "*.md"]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
-  probe:
+  build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sw_vers && go version || true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
+      - name: Test the engine
+        run: go test -count=1 .
+      - name: Build (Apple Silicon + Intel)
+        env:
+          CGO_ENABLED: "1"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+        run: |
+          GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o build/Mishk-arm64 .
+          GOARCH=amd64 CC="clang -arch x86_64" go build -trimpath -ldflags "-s -w" -o build/Mishk-amd64 .
+          lipo -create -output build/Mishk build/Mishk-arm64 build/Mishk-amd64
+          lipo -info build/Mishk
+      - name: Make Mishk.app
+        run: |
+          APP=build/Mishk.app
+          mkdir -p $APP/Contents/MacOS $APP/Contents/Resources
+          cp build/Mishk $APP/Contents/MacOS/Mishk
+          cp res/mac/Info.plist $APP/Contents/Info.plist
+          cp res/mishk.icns $APP/Contents/Resources/mishk.icns
+          codesign --force --deep --sign - $APP
+          codesign --verify --verbose $APP
+          cd build && ditto -c -k --keepParent Mishk.app Mishk-macOS.zip
+          ls -la
+      - name: Smoke test (starts and stays up)
+        run: |
+          ./build/Mishk.app/Contents/MacOS/Mishk --tray > build/run.log 2>&1 &
+          PID=$!
+          sleep 8
+          if kill -0 $PID 2>/dev/null; then echo "running OK"; kill $PID; else echo "exited early"; cat build/run.log; exit 1; fi
+          cat "$HOME/Library/Application Support/Mishk/mishk.log" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mishk-macOS
+          path: build/Mishk-macOS.zip
+      - name: Publish the download
+        run: |
+          mkdir -p download
+          cp build/Mishk-macOS.zip download/Mishk-macOS.zip
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add download/Mishk-macOS.zip
+          git commit -m "macOS build ${GITHUB_SHA::7} [skip ci]" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main

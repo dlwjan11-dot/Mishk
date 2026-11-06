@@ -317,6 +317,12 @@ func keyName(vk uint16) string {
 	if vk >= 0x41 && vk <= 0x5A {
 		return string(rune('a' + vk - 0x41))
 	}
+	if vk == 0x5B {
+		return "win"
+	}
+	if vk == 0x12 {
+		return "alt"
+	}
 	if n, ok := vkRev[vk]; ok {
 		return n
 	}
