@@ -422,21 +422,21 @@ func TestGestures(t *testing.T) {
 	sim.rawXY(-50, 3)
 	sim.buttons()
 	settle(e)
-	if got := rec.take(); got != "+ctrl +win +left -left -win -ctrl" {
+	if got := rec.take(); got != tapStr(builtinKeys["desktopPrev"]) {
 		t.Fatalf("swipe left: %q", got)
 	}
 	sim.buttons(0x00C3)
 	sim.rawXY(3, 2)
 	sim.buttons()
 	settle(e)
-	if got := rec.take(); got != "+win +tab -tab -win" {
+	if got := rec.take(); got != tapStr(builtinKeys["taskview"]) {
 		t.Fatalf("click: %q", got)
 	}
 	sim.buttons(0x00C3)
 	sim.rawXY(0, 90)
 	sim.buttons()
 	settle(e)
-	if got := rec.take(); got != "+win +d -d -win" {
+	if got := rec.take(); got != tapStr(builtinKeys["showdesktop"]) {
 		t.Fatalf("down: %q", got)
 	}
 }
@@ -706,7 +706,7 @@ func TestOtherMiceButtons(t *testing.T) {
 	sim.rawXY(80, 0)
 	sim.buttons()
 	settle(e)
-	if got := rec.take(); got != "+ctrl +win +right -right -win -ctrl" {
+	if got := rec.take(); got != tapStr(builtinKeys["desktopNext"]) {
 		t.Fatalf("sense panel swipe: %q", got)
 	}
 }
@@ -798,7 +798,7 @@ func TestAnyMouse(t *testing.T) {
 	e.GenericButton("back", true)
 	e.GenericButton("back", false)
 	settle(e)
-	if got := rec.take(); got != "+ctrl +c -c -ctrl" {
+	if got := rec.take(); got != tapStr(builtinKeys["copy"]) {
 		t.Fatalf("back: %q", got)
 	}
 	e.GenericButton("middle", true)
@@ -806,7 +806,7 @@ func TestAnyMouse(t *testing.T) {
 	e.GenericMove(0, -40)
 	e.GenericButton("middle", false)
 	settle(e)
-	if got := rec.take(); got != "+win +tab -tab -win" {
+	if got := rec.take(); got != tapStr(builtinKeys["taskview"]) {
 		t.Fatalf("middle swipe up: %q", got)
 	}
 	e.GenericButton("forward", true)
@@ -826,4 +826,11 @@ func TestAnyMouse(t *testing.T) {
 	if !found {
 		t.Fatal("generic device not listed")
 	}
+}
+
+// tapStr is what the recorder sees when a shortcut is tapped.
+func tapStr(keys string) string {
+	r := &recorder{}
+	tapKeys(r, keys)
+	return r.take()
 }
