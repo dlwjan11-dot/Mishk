@@ -37,12 +37,12 @@ type Device struct {
 	savedDPI                     int // DPI before precision mode
 	tempDPI                      bool
 
-	ssEnh                     bool
-	ssMode, ssAuto, ssTorque  byte
-	hiresFlags                byte
-	thumbNative, thumbDivRes  int
+	ssEnh                      bool
+	ssMode, ssAuto, ssTorque   byte
+	hiresFlags                 byte
+	thumbNative, thumbDivRes   int
 	thumbInvert, thumbDiverted bool
-	Hosts, CurHost            int
+	Hosts, CurHost             int
 
 	diverted map[uint16]byte // cid -> bfield currently applied
 	pressed  map[uint16]bool
@@ -82,8 +82,12 @@ type Engine struct {
 	cmds    chan func()
 	stop    chan struct{}
 
+	fgMu      sync.Mutex
 	fgCache   string
 	fgCacheAt time.Time
+
+	generic *Device  // any mouse, through Windows (see generic.go)
+	sys     SysMouse // Windows mouse settings
 
 	OnChange func()
 	OnNotify func(title, body string)
@@ -761,8 +765,7 @@ func (e *Engine) applyDiversions(d *Device, cfg *Config, force bool) {
 		return
 	}
 	for _, key := range buttonKeys {
-		cid := buttonCID[key]
-		info, ok := d.cids[cid]
+		cid, info, ok := d.cidFor(key)
 		if !ok {
 			continue
 		}
@@ -878,7 +881,11 @@ func (e *Engine) handlePacket(ls *linkState, pkt []byte) {
 	// Receiver: device connected / disconnected.
 	if sub == 0x41 && ls.kind == "receiver" {
 		linked := pkt[4]&0x40 == 0
+		wasSeen := ls.seen[idx]
 		ls.seen[idx] = true
+		if linked && !wasSeen {
+			e.unifyingPaired(ls, idx)
+		}
 		d := e.device(ls, idx)
 		d.WPID = uint16(pkt[6])<<8 | uint16(pkt[5])
 		logf("[%s] connection event: linked=%v wpid=%04X", d.key, linked, d.WPID)
@@ -938,7 +945,22 @@ func (e *Engine) handlePacket(ls *linkState, pkt []byte) {
 	}
 }
 
-func cidKey(cid uint16) string {
+// cidFor finds which control on this device plays the role of a button.
+func (d *Device) cidFor(key string) (uint16, cidInfo, bool) {
+	for _, cid := range buttonCIDs[key] {
+		if info, ok := d.cids[cid]; ok && info.Divertable {
+			return cid, info, true
+		}
+	}
+	return 0, cidInfo{}, false
+}
+
+func (d *Device) keyOf(cid uint16) string {
+	for _, k := range buttonKeys {
+		if c, _, ok := d.cidFor(k); ok && c == cid {
+			return k
+		}
+	}
 	for k, c := range buttonCID {
 		if c == cid {
 			return k
@@ -951,6 +973,8 @@ func (e *Engine) foreground() string {
 	if e.fgFunc == nil {
 		return ""
 	}
+	e.fgMu.Lock()
+	defer e.fgMu.Unlock()
 	if time.Since(e.fgCacheAt) < 250*time.Millisecond {
 		return e.fgCache
 	}
@@ -1020,6 +1044,10 @@ func (o devOps) PrecisionDPI() int {
 }
 func (o devOps) SetTempDPI(dpi int) {
 	d, e := o.d, o.e
+	if d.ch == nil { // any mouse: slow Windows down instead
+		e.tempSysSpeed(dpi > 0)
+		return
+	}
 	if dpi > 0 {
 		if !d.tempDPI {
 			d.savedDPI = d.DPI
@@ -1035,7 +1063,7 @@ func (o devOps) SetTempDPI(dpi int) {
 }
 
 func (e *Engine) buttonDown(d *Device, cid uint16) {
-	key := cidKey(cid)
+	key := d.keyOf(cid)
 	act := e.resolve(key)
 	logf("[%s] %s down -> %s %s", d.key, key, act.Type, act.Value)
 	switch act.Type {
@@ -1052,6 +1080,8 @@ func (e *Engine) buttonDown(d *Device, cid uint16) {
 			d.held[cid] = func() { e.act.MouseButton(key, false) }
 		case "top":
 			e.toggleSmartShift(d)
+		case "dpiswitch":
+			e.cycleDPI(d)
 		}
 	case "none":
 	default:
@@ -1199,8 +1229,10 @@ func (e *Engine) SetConfig(c *Config) error {
 		return err
 	}
 	e.mu.Lock()
+	old := e.cfg
 	e.cfg = c.Clone()
 	e.mu.Unlock()
+	e.applySystem(old, c)
 	e.post(func() {
 		e.mu.Lock()
 		var devs []*Device
@@ -1249,35 +1281,36 @@ func (e *Engine) Refresh() {
 }
 
 type DeviceView struct {
-	Key          string `json:"key"`
-	Name         string `json:"name"`
-	Conn         string `json:"conn"`
-	Online       bool   `json:"online"`
-	Ready        bool   `json:"ready"`
-	Mouse        bool   `json:"mouse"`
-	Battery      int    `json:"battery"`
-	Charging     bool   `json:"charging"`
-	DPI          int    `json:"dpi"`
-	DPIMin       int    `json:"dpiMin"`
-	DPIMax       int    `json:"dpiMax"`
-	DPIStep      int    `json:"dpiStep"`
-	HasDPI       bool   `json:"hasDpi"`
-	HasSS        bool   `json:"hasSmartShift"`
-	HasTorque    bool   `json:"hasTorque"`
-	SSMode       string `json:"ssMode"`
-	SSSens       int    `json:"ssSensitivity"`
-	SSTorque     int    `json:"ssTorque"`
-	HasHiRes     bool   `json:"hasHiRes"`
-	SmoothScroll bool   `json:"smoothScroll"`
-	InvertScroll bool   `json:"invertScroll"`
-	HasThumb     bool   `json:"hasThumb"`
-	InvertThumb  bool   `json:"invertThumb"`
-	Hosts        int    `json:"hosts"`
-	CurHost      int    `json:"curHost"`
+	Key          string   `json:"key"`
+	Name         string   `json:"name"`
+	Conn         string   `json:"conn"`
+	Online       bool     `json:"online"`
+	Ready        bool     `json:"ready"`
+	Mouse        bool     `json:"mouse"`
+	Battery      int      `json:"battery"`
+	Charging     bool     `json:"charging"`
+	DPI          int      `json:"dpi"`
+	DPIMin       int      `json:"dpiMin"`
+	DPIMax       int      `json:"dpiMax"`
+	DPIStep      int      `json:"dpiStep"`
+	HasDPI       bool     `json:"hasDpi"`
+	HasSS        bool     `json:"hasSmartShift"`
+	HasTorque    bool     `json:"hasTorque"`
+	SSMode       string   `json:"ssMode"`
+	SSSens       int      `json:"ssSensitivity"`
+	SSTorque     int      `json:"ssTorque"`
+	HasHiRes     bool     `json:"hasHiRes"`
+	SmoothScroll bool     `json:"smoothScroll"`
+	InvertScroll bool     `json:"invertScroll"`
+	HasThumb     bool     `json:"hasThumb"`
+	InvertThumb  bool     `json:"invertThumb"`
+	Hosts        int      `json:"hosts"`
+	CurHost      int      `json:"curHost"`
 	Buttons      []string `json:"buttons"`
-	Gestures     bool   `json:"gestures"`
-	Link         string `json:"link"`
-	Slot         int    `json:"slot"`
+	Gestures     bool     `json:"gestures"`
+	Link         string   `json:"link"`
+	Generic      bool     `json:"generic"`
+	Slot         int      `json:"slot"`
 }
 
 func (e *Engine) Devices() []DeviceView {
@@ -1313,7 +1346,7 @@ func (e *Engine) Devices() []DeviceView {
 		v.InvertThumb = d.thumbInvert
 		if hasRe {
 			for _, k := range buttonKeys {
-				if info, ok := d.cids[buttonCID[k]]; ok && info.Divertable {
+				if _, info, ok := d.cidFor(k); ok {
 					v.Buttons = append(v.Buttons, k)
 					if k == "gesture" {
 						v.Gestures = info.RawXY
@@ -1326,7 +1359,14 @@ func (e *Engine) Devices() []DeviceView {
 		}
 		out = append(out, v)
 	}
+	if g := e.generic; g != nil {
+		out = append(out, DeviceView{Key: g.key, Name: g.Name, Conn: "system", Online: true, Ready: true, Mouse: true,
+			Battery: -1, Buttons: []string{"back", "forward", "middle"}, Gestures: true, Generic: true})
+	}
 	sort.Slice(out, func(i, j int) bool {
+		if out[i].Generic != out[j].Generic {
+			return !out[i].Generic
+		}
 		if out[i].Mouse != out[j].Mouse {
 			return out[i].Mouse
 		}

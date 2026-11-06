@@ -24,6 +24,7 @@ type PairingView struct {
 	Keyboard bool     `json:"keyboard"`
 	Pressed  int      `json:"pressed"`
 	Error    string   `json:"error"`
+	Unifying bool     `json:"unifying"`
 }
 
 type pairingState struct {
@@ -51,11 +52,13 @@ func (e *Engine) StartPairing(linkID string) {
 	e.post(func() {
 		e.mu.Lock()
 		ls := e.links[linkID]
+		if ls != nil && ls.kind != "receiver" {
+			ls = nil
+		}
 		if ls == nil {
 			for _, l := range e.links {
-				if l.kind == "receiver" && isBolt(l) {
+				if l.kind == "receiver" && (ls == nil || isBolt(l)) {
 					ls = l
-					break
 				}
 			}
 		}
@@ -73,8 +76,31 @@ func (e *Engine) StartPairing(linkID string) {
 			e.changed()
 			return
 		}
-		e.pair = &pairingState{PairingView: PairingView{Active: true, Link: ls.id, Stage: "discovering"}, ls: ls, counter: -1, gen: gen}
+		bolt := isBolt(ls)
+		stage := "discovering"
+		if !bolt {
+			stage = "waiting"
+		}
+		e.pair = &pairingState{PairingView: PairingView{Active: true, Link: ls.id, Stage: stage, Unifying: !bolt}, ls: ls, counter: -1, gen: gen}
 		e.mu.Unlock()
+		if !bolt {
+			// Unifying-style receivers: open the pairing lock, then the device pairs
+			// itself when it is switched off and on again.
+			logf("pairing: opening the pairing lock on %s", ls.id)
+			if _, err := ls.ch.Register(devReceiver, 0x80, 0xB2, 0x01, 0x00, pairTimeoutSec); err != nil {
+				logf("pairing: lock did not open: %v", err)
+				e.pairFail("start")
+				return
+			}
+			e.changed()
+			e.postAfter((pairTimeoutSec+5)*time.Second, func() {
+				if e.pair != nil && e.pair.gen == gen && e.pair.Active {
+					e.CancelPairingNow()
+					e.pairFail("notfound")
+				}
+			})
+			return
+		}
 		logf("pairing: starting discovery on %s", ls.id)
 		if _, err := ls.ch.Register(devReceiver, 0x80, 0xC0, pairTimeoutSec, 0x01, 0x00); err != nil {
 			logf("pairing: discovery did not start: %v", err)
@@ -105,8 +131,12 @@ func (e *Engine) CancelPairingNow() {
 		return
 	}
 	if p.Active {
-		_, _ = p.ls.ch.RegisterLong(devReceiver, 0xC1, 0x02)
-		_, _ = p.ls.ch.Register(devReceiver, 0x80, 0xC0, pairTimeoutSec, 0x02, 0x00)
+		if p.Unifying {
+			_, _ = p.ls.ch.Register(devReceiver, 0x80, 0xB2, 0x02, 0x00, 0x00)
+		} else {
+			_, _ = p.ls.ch.RegisterLong(devReceiver, 0xC1, 0x02)
+			_, _ = p.ls.ch.Register(devReceiver, 0x80, 0xC0, pairTimeoutSec, 0x02, 0x00)
+		}
 		logf("pairing: cancelled")
 	}
 	e.mu.Lock()
@@ -150,6 +180,19 @@ func (e *Engine) handlePairingPacket(ls *linkState, pkt []byte) bool {
 		return false
 	}
 	sub := pkt[2]
+	if sub == 0x4A { // Unifying pairing lock status
+		p := e.pair
+		if p == nil || p.ls != ls || !p.Unifying {
+			return true
+		}
+		open := pkt[3]&0x01 != 0
+		if errc := pkt[4]; errc != 0 {
+			e.pairFail(map[byte]string{1: "timeout", 2: "failed", 3: "failed", 6: "full"}[errc])
+		} else if !open && p.Active && p.Stage == "waiting" {
+			e.pairFail("notfound")
+		}
+		return true
+	}
 	if sub != 0x4D && sub != 0x4E && sub != 0x4F && sub != 0x53 && sub != 0x54 {
 		return false
 	}
@@ -346,4 +389,32 @@ func (e *Engine) Receivers() []ReceiverView {
 		out = append(out, r)
 	}
 	return out
+}
+
+// unifyingPaired is called when a device appears in a slot we had not seen,
+// which is how a Unifying receiver reports a new pairing.
+func (e *Engine) unifyingPaired(ls *linkState, idx byte) {
+	p := e.pair
+	if p == nil || p.ls != ls || !p.Unifying || !p.Active {
+		return
+	}
+	logf("pairing: new device in slot %d", idx)
+	_, _ = ls.ch.Register(devReceiver, 0x80, 0xB2, 0x02, 0x00, 0x00) // close the lock
+	e.mu.Lock()
+	p.Active = false
+	p.Stage = "done"
+	e.mu.Unlock()
+	e.changed()
+	d := e.device(ls, idx)
+	e.postAfter(900*time.Millisecond, func() {
+		if !d.Ready {
+			e.initDevice(d)
+		}
+		e.mu.Lock()
+		if e.pair == p {
+			p.Name = d.Name
+		}
+		e.mu.Unlock()
+		e.changed()
+	})
 }

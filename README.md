@@ -6,7 +6,9 @@
 
 **A small, fast replacement for Logi Options+ on Windows**
 
-For Logitech MX mice, made for the MX Master 3S on a Logi Bolt receiver or Bluetooth.
+Made for the Logitech MX Master 3S, and works with most mice: other Logitech mice over HID++, and the back, forward and middle buttons of any mouse from any brand.
+
+**Website:** [dlwjan11-dot.github.io/Mishk](https://dlwjan11-dot.github.io/Mishk/)
 
 English · [العربية](README.ar.md)
 
@@ -43,11 +45,16 @@ Mishk talks to the mouse directly over Logitech's HID++ protocol. Buttons are re
 - SmartShift, always ratchet or always free-spin, sensitivity and ratchet force
 - Smooth scrolling, reversed scroll for the main wheel and the thumb wheel
 
+**Other mice**
+- Other Logitech mice: MX Master 4 (sense panel as the gesture button), MX Master 2S, MX Anywhere, MX Vertical (DPI button) and other HID++ mice get the buttons they have, DPI and battery
+- Any mouse from any brand: back, forward and middle buttons with gestures and per-app profiles, plus Windows pointer speed, acceleration and scroll lines
+
 **Pairing and the device**
-- First-time pairing with a Logi Bolt receiver, including the left/right click passkey, and unpairing
+- First-time pairing with Logi Bolt and Unifying receivers, including the Bolt left/right click passkey, and unpairing
 - Battery in the tray with a low battery alert
 - Easy-Switch channels
 - Settings are put back automatically when the mouse wakes up or reconnects
+- A "Mouse lag?" helper: turn off Windows animation effects in one click (stops stutter for many people on Windows 11), plus receiver placement tips
 
 **The app**
 - Arabic and English interface, dark and light

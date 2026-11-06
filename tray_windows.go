@@ -206,6 +206,7 @@ func (t *Tray) showMenu() {
 		c := t.app.engine.Config()
 		c.Paused = !c.Paused
 		_ = t.app.engine.SetConfig(c)
+		updateHook(t.app.engine, false)
 		t.app.pushState()
 	case menuExit:
 		t.app.Quit()
@@ -244,6 +245,7 @@ func trayWndProc(hwnd, msg, wp, lp uintptr) uintptr {
 	case wmPowerBroadcast:
 		if wp == 0x12 || wp == 0x07 { // resumed from sleep
 			logf("system resumed from sleep")
+			updateHook(t.app.engine, true)
 			t.app.scanner.Trigger()
 			t.app.engine.postAfter(3e9, func() { t.app.engine.Refresh() })
 		}

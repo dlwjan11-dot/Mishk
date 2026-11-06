@@ -29,10 +29,10 @@ type App struct {
 	tray    *Tray
 	dataDir string
 
-	uiMu      sync.Mutex
-	ui        webview2.WebView
+	uiMu       sync.Mutex
+	ui         webview2.WebView
 	pushQueued bool
-	quitting  bool
+	quitting   bool
 }
 
 func main() {
@@ -73,7 +73,9 @@ func main() {
 	app.tray = t
 	app.engine.OnChange = app.onEngineChange
 	app.engine.OnNotify = func(title, body string) { t.Notify(title, body) }
+	app.engine.EnableGeneric(winSys{}, genericName(cfg.Lang))
 	app.engine.Start()
+	updateHook(app.engine, false)
 	go app.scanner.Run()
 
 	if firstRun {
@@ -113,6 +115,7 @@ func (a *App) loop() {
 }
 
 func (a *App) shutdown() {
+	mouseHook.e = nil
 	a.tray.Remove()
 	a.engine.Stop()
 	a.scanner.CloseAll()
@@ -165,14 +168,15 @@ func (a *App) pushState() {
 }
 
 type stateView struct {
-	Version     string       `json:"version"`
-	Devices     []DeviceView `json:"devices"`
-	Config      *Config      `json:"config"`
-	OptionsPlus bool         `json:"optionsPlus"`
-	Autostart   bool         `json:"autostart"`
-	DataDir     string       `json:"dataDir"`
+	Version     string         `json:"version"`
+	Devices     []DeviceView   `json:"devices"`
+	Config      *Config        `json:"config"`
+	OptionsPlus bool           `json:"optionsPlus"`
+	Autostart   bool           `json:"autostart"`
+	DataDir     string         `json:"dataDir"`
 	Pairing     *PairingView   `json:"pairing"`
 	Receivers   []ReceiverView `json:"receivers"`
+	Sys         *SysView       `json:"sys"`
 }
 
 var optionsPlusCache struct {
@@ -194,5 +198,6 @@ func (a *App) state() stateView {
 		DataDir:     a.dataDir,
 		Pairing:     a.engine.Pairing(),
 		Receivers:   a.engine.Receivers(),
+		Sys:         a.engine.Sys(),
 	}
 }

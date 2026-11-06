@@ -11,24 +11,26 @@ import (
 // ---- a simulated Bolt receiver with an MX Master 3S in slot 2 ----
 
 type simMouse struct {
-	mu       sync.Mutex
-	chMu     sync.Mutex
-	ch       *Channel
-	idx      byte
-	online   bool
-	features []uint16 // index = position
-	dpi      int
-	ssMode   byte
-	ssAuto   byte
-	ssTorque byte
-	hires    byte
-	thumbDiv byte
-	thumbInv byte
-	report   map[uint16]byte
+	mu         sync.Mutex
+	chMu       sync.Mutex
+	ch         *Channel
+	idx        byte
+	online     bool
+	features   []uint16 // index = position
+	dpi        int
+	ssMode     byte
+	ssAuto     byte
+	ssTorque   byte
+	hires      byte
+	thumbDiv   byte
+	thumbInv   byte
+	report     map[uint16]byte
 	notifFlags []byte
-	pairReq  []byte
-	sent     []string
-	silent   bool
+	cidList    []simCID
+	unifying   bool
+	pairReq    []byte
+	sent       []string
+	silent     bool
 }
 
 func newSimMouse() *simMouse {
@@ -37,13 +39,22 @@ func newSimMouse() *simMouse {
 		dpi:      1000, ssMode: 2, ssAuto: 10, ssTorque: 50, hires: 0x02, report: map[uint16]byte{}}
 }
 
-var simCIDs = []struct {
+type simCID struct {
 	cid   uint16
 	flags byte
 	f2    byte
-}{
+}
+
+var simCIDs = []simCID{
 	{0x0050, 0x01, 0}, {0x0051, 0x01, 0}, {0x0052, 0x31, 0x01}, {0x0053, 0x31, 0x01},
 	{0x0056, 0x31, 0x01}, {0x00C3, 0x31, 0x03}, {0x00C4, 0x31, 0x03}, {0x00D7, 0xB4, 0x03},
+}
+
+func (s *simMouse) controls() []simCID {
+	if s.cidList != nil {
+		return s.cidList
+	}
+	return simCIDs
 }
 
 func (s *simMouse) HasShort() bool { return true }
@@ -98,6 +109,20 @@ func (s *simMouse) answer(r []byte) {
 				s.channel().Deliver(long(reportLong, 0xFF, 0x4F, 0x07, 0x00, 0x00, 0, 0x02, 0, 0, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0, 0, 0x00))
 				s.channel().Deliver(long(append([]byte{reportLong, 0xFF, 0x4F, 0x07, 0x00, 0x01, 12}, []byte("MX Master 3S")...)...))
 			}()
+		case r[2] == 0x80 && r[3] == 0xB2: // Unifying pairing lock
+			go s.deliver(reportShort, 0xFF, 0x80, 0xB2, 0, 0, 0)
+			if r[4] == 0x01 {
+				go func() {
+					time.Sleep(20 * time.Millisecond)
+					ch := s.channel()
+					ch.Deliver([]byte{reportShort, 0xFF, 0x4A, 0x01, 0, 0, 0})
+					time.Sleep(30 * time.Millisecond)
+					s.mu.Lock()
+					s.online = true
+					s.mu.Unlock()
+					ch.Deliver([]byte{reportShort, s.idx, 0x41, 0x04, 0x02, 0x34, 0xB0})
+				}()
+			}
 		case r[2] == 0x80 && r[3] == 0xC0:
 			go s.deliver(reportShort, 0xFF, 0x80, 0xC0, 0, 0, 0)
 		case r[2] == 0x80 && r[3] == 0x02:
@@ -178,9 +203,9 @@ func (s *simMouse) answer(r []byte) {
 	case 0x1B04:
 		switch fn {
 		case 0:
-			reply(byte(len(simCIDs)))
+			reply(byte(len(s.controls())))
 		case 1:
-			c := simCIDs[p[0]]
+			c := s.controls()[p[0]]
 			reply(byte(c.cid>>8), byte(c.cid), 0, 0, c.flags, 0, 0, 0, c.f2)
 		case 2:
 			cid := uint16(p[0])<<8 | uint16(p[1])
@@ -574,7 +599,6 @@ func TestParseKeys(t *testing.T) {
 	}
 }
 
-
 func TestBoltPairing(t *testing.T) {
 	dir := t.TempDir()
 	rec := &recorder{}
@@ -635,5 +659,165 @@ func TestBoltPairing(t *testing.T) {
 	sim.mu.Unlock()
 	if req != "03 02" || len(e.Devices()) != 0 {
 		t.Fatalf("unpair req %s devices %d", req, len(e.Devices()))
+	}
+}
+
+func TestOtherMiceButtons(t *testing.T) {
+	// An MX Master 4 style mouse: gesture is the haptic sense panel (0x01A0),
+	// and an MX Vertical style DPI switch (0x00FD) instead of the wheel-mode button.
+	dir := t.TempDir()
+	rec := &recorder{}
+	cfg := DefaultConfig()
+	cfg.Buttons["dpiswitch"] = Action{Type: "media", Value: "mute"}
+	e := NewEngine(cfg, NewConfigStore(dir), rec, func() string { return "" })
+	e.Start()
+	defer e.Stop()
+	sim := newSimMouse()
+	sim.cidList = []simCID{{0x0050, 0x01, 0}, {0x0051, 0x01, 0}, {0x0052, 0x31, 0x01}, {0x0053, 0x31, 0x01},
+		{0x0056, 0x31, 0x01}, {0x01A0, 0x31, 0x03}, {0x00FD, 0x31, 0x01}}
+	c := e.AddLink("bolt1", "receiver", "Logi Bolt", sim)
+	sim.chMu.Lock()
+	sim.ch = c
+	sim.chMu.Unlock()
+	d := waitReady(t, e)
+	if got := strings.Join(d.Buttons, ","); got != "gesture,back,forward,middle,dpiswitch" {
+		t.Fatalf("buttons %s", got)
+	}
+	sim.mu.Lock()
+	g, dp := sim.report[0x01A0], sim.report[0x00FD]
+	sim.mu.Unlock()
+	if g != 0x11 || dp != 0x01 {
+		t.Fatalf("diversions sense=%02X dpi=%02X", g, dp)
+	}
+	rec.take()
+	sim.buttons(0x00FD)
+	sim.buttons()
+	settle(e)
+	if got := rec.take(); got != "+mute -mute" {
+		t.Fatalf("dpi switch: %q", got)
+	}
+	sim.buttons(0x01A0)
+	sim.rawXY(80, 0)
+	sim.buttons()
+	settle(e)
+	if got := rec.take(); got != "+ctrl +win +right -right -win -ctrl" {
+		t.Fatalf("sense panel swipe: %q", got)
+	}
+}
+
+func TestUnifyingPairing(t *testing.T) {
+	dir := t.TempDir()
+	e := NewEngine(DefaultConfig(), NewConfigStore(dir), &recorder{}, func() string { return "" })
+	e.Start()
+	defer e.Stop()
+	sim := newSimMouse()
+	sim.online = false
+	c := e.AddLink("uni1", "receiver", "Unifying USB Receiver", sim)
+	sim.chMu.Lock()
+	sim.ch = c
+	sim.chMu.Unlock()
+	time.Sleep(2500 * time.Millisecond)
+	settle(e)
+	e.StartPairing("")
+	time.Sleep(200 * time.Millisecond)
+	d := waitReady(t, e)
+	time.Sleep(1200 * time.Millisecond)
+	p := e.Pairing()
+	if p == nil || p.Stage != "done" || !p.Unifying || p.Name != "MX Master 3S" || d.Conn != "unifying" {
+		t.Fatalf("pairing %+v device %+v\n%s", p, d, logText())
+	}
+}
+
+type fakeSys struct {
+	mu           sync.Mutex
+	speed, lines int
+	accel        bool
+	persisted    int
+}
+
+func (f *fakeSys) Speed() int { f.mu.Lock(); defer f.mu.Unlock(); return f.speed }
+func (f *fakeSys) SetSpeed(v int, persist bool) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.speed = v
+	if persist {
+		f.persisted = v
+	}
+	return nil
+}
+func (f *fakeSys) Accel() bool              { f.mu.Lock(); defer f.mu.Unlock(); return f.accel }
+func (f *fakeSys) SetAccel(on bool) error   { f.mu.Lock(); defer f.mu.Unlock(); f.accel = on; return nil }
+func (f *fakeSys) Animations() bool         { return true }
+func (f *fakeSys) SetAnimations(bool) error { return nil }
+func (f *fakeSys) ScrollLines() int         { f.mu.Lock(); defer f.mu.Unlock(); return f.lines }
+func (f *fakeSys) SetScrollLines(n int) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.lines = n
+	return nil
+}
+
+func TestAnyMouse(t *testing.T) {
+	dir := t.TempDir()
+	rec := &recorder{}
+	fg := "chrome.exe"
+	e := NewEngine(DefaultConfig(), NewConfigStore(dir), rec, func() string { return fg })
+	e.Start()
+	defer e.Stop()
+	sys := &fakeSys{speed: 10, lines: 3}
+	e.EnableGeneric(sys, "Any mouse")
+	if take, _ := e.GenericWants("back"); take || e.GenericNeeded() {
+		t.Fatal("defaults must leave other mice alone")
+	}
+	c := e.Config()
+	c.Buttons["back"] = Action{Type: "builtin", Value: "copy"}
+	c.Buttons["middle"] = Action{Type: "gestures", Gestures: gesturesVirtualDesktops()}
+	c.Buttons["forward"] = Action{Type: "builtin", Value: "precision"}
+	c.WinSpeed = 12
+	tr := true
+	c.WinAccel = &tr
+	c.ScrollLines = 5
+	_ = e.SetConfig(c)
+	settle(e)
+	if sys.Speed() != 12 || !sys.Accel() || sys.ScrollLines() != 5 {
+		t.Fatalf("windows settings %+v", sys)
+	}
+	if !e.GenericNeeded() {
+		t.Fatal("hook should be needed")
+	}
+	if take, g := e.GenericWants("middle"); !take || !g {
+		t.Fatal("middle should be taken as a gesture button")
+	}
+	rec.take()
+	e.GenericButton("back", true)
+	e.GenericButton("back", false)
+	settle(e)
+	if got := rec.take(); got != "+ctrl +c -c -ctrl" {
+		t.Fatalf("back: %q", got)
+	}
+	e.GenericButton("middle", true)
+	e.GenericMove(0, -50)
+	e.GenericMove(0, -40)
+	e.GenericButton("middle", false)
+	settle(e)
+	if got := rec.take(); got != "+win +tab -tab -win" {
+		t.Fatalf("middle swipe up: %q", got)
+	}
+	e.GenericButton("forward", true)
+	settle(e)
+	held := sys.Speed()
+	e.GenericButton("forward", false)
+	settle(e)
+	if held != 3 || sys.Speed() != 12 || sys.persisted != 12 {
+		t.Fatalf("precision held=%d after=%d persisted=%d", held, sys.Speed(), sys.persisted)
+	}
+	var found bool
+	for _, d := range e.Devices() {
+		if d.Generic && d.Name == "Any mouse" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("generic device not listed")
 	}
 }

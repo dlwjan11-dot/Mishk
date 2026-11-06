@@ -67,22 +67,36 @@ type Config struct {
 	StartMinimized   bool              `json:"startMinimized"`
 	Theme            string            `json:"theme"` // dark | light | system
 
+	// Windows mouse settings (apply to every mouse). 0 / nil = leave as they are.
+	WinSpeed    int   `json:"winSpeed"`           // 1..20
+	WinAccel    *bool `json:"winAccel,omitempty"` // "Enhance pointer precision"
+	ScrollLines int   `json:"scrollLines"`        // 1..100
+
 	// The user's own photo of their mouse, shown instead of the drawing.
 	MousePhoto string                `json:"mousePhoto,omitempty"` // file name in the data folder
 	PhotoScale float64               `json:"photoScale,omitempty"`
-	PhotoShift [2]float64            `json:"photoShift"` // pan offset in diagram units
+	PhotoShift [2]float64            `json:"photoShift"`           // pan offset in diagram units
 	PhotoSpots map[string][2]float64 `json:"photoSpots,omitempty"` // button -> x,y in the 760x560 diagram
 }
 
 // Button keys, in the order shown in the UI.
-var buttonKeys = []string{"gesture", "back", "forward", "middle", "top"}
+var buttonKeys = []string{"gesture", "back", "forward", "middle", "top", "dpiswitch"}
 
+// HID++ control ids for each button, in order of preference. Different Logitech
+// mice use different ids for the same job (MX Master 4's haptic sense panel is
+// its gesture button, MX Vertical has a DPI switch instead of a wheel-mode button).
+var buttonCIDs = map[string][]uint16{
+	"middle":    {0x0052},
+	"back":      {0x0053},
+	"forward":   {0x0056},
+	"gesture":   {0x00C3, 0x01A0},
+	"top":       {0x00C4},
+	"dpiswitch": {0x00FD},
+}
+
+// buttonCID is the main id of each button (used by the generic, non-HID++ path).
 var buttonCID = map[string]uint16{
-	"middle":  0x0052,
-	"back":    0x0053,
-	"forward": 0x0056,
-	"gesture": 0x00C3,
-	"top":     0x00C4,
+	"middle": 0x0052, "back": 0x0053, "forward": 0x0056, "gesture": 0x00C3, "top": 0x00C4, "dpiswitch": 0x00FD,
 }
 
 func gesturesVirtualDesktops() *Gestures {
@@ -99,11 +113,12 @@ func DefaultConfig() *Config {
 	return &Config{
 		Lang: "en",
 		Buttons: map[string]Action{
-			"gesture": {Type: "gestures", Gestures: gesturesVirtualDesktops()},
-			"back":    {Type: "default"},
-			"forward": {Type: "default"},
-			"middle":  {Type: "default"},
-			"top":     {Type: "default"},
+			"gesture":   {Type: "gestures", Gestures: gesturesVirtualDesktops()},
+			"back":      {Type: "default"},
+			"forward":   {Type: "default"},
+			"middle":    {Type: "default"},
+			"top":       {Type: "default"},
+			"dpiswitch": {Type: "default"},
 		},
 		Thumb:            WheelAction{Type: "default"},
 		ThumbSensitivity: 5,

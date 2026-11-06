@@ -274,6 +274,11 @@ ar:{
   d_diag:"تشخيص المشاكل", d_diag_hint:"إذا شي ما زبط، انسخ هالسجل وابعتو.", d_showlog:"اعرض السجل", d_folder:"افتح مجلد البرنامج",
   d_quit:"سكّر البرنامج نهائياً", d_about:"مبني على بروتوكول HID++ من لوجيتك. مستوحى من Mouser (رخصة MIT).",
   saved:"انحفظ", err:"صار خطأ: ",
+  any_mouse:"أي ماوس", conn_system:"عن طريق ويندوز", b_dpiswitch:"زر السرعة", native_dpiswitch:"تبديل السرعة",
+  pr_title_uni:"مستقبل Unifying", pw_title_uni:"ربط جهاز بمستقبل Unifying", pw_u1:"طفّي الماوس من الزر اللي تحته.", pw_u2:"شغّله من جديد. رح ينربط لحاله خلال ثواني.", pw_wait:"عم استنّى الجهاز…", pw_err_full:"المستقبل مليان. افصل جهاز قبل.",
+  s_windows:"إعدادات ويندوز للماوس", s_windows_hint:"بتنطبق على كل الماوسات، من أي شركة.", s_wspeed:"سرعة المؤشر بويندوز", s_waccel:"تحسين دقة المؤشر (تسارع)", s_lines:"عدد الأسطر بكل تكّة تمرير",
+  lag_title:"الماوس بيعلّق أو بيقطّع؟", lag_anim:"تأثيرات الحركة بويندوز", lag_anim_hint:"عند كتير ناس، تطفية هالتأثيرات بتوقف تقطيع المؤشر على ويندوز 11.",
+  lag_tips:"إذا لسا بيقطّع، السبب غالباً تشويش لاسلكي على المستقبل:", lag_t1:"بعّد مستقبل Bolt عن منافذ USB 3 الزرقا، أو ركّبه على وصلة تمديد أو hub نوع USB 2.0 وقرّبه من الماوس.", lag_t2:"خلّي المستقبل على بعد متر تقريباً من الماوس، وبعيد عن الراوتر والمستقبلات التانية.", lag_t3:"أو استعمل Bluetooth بدل المستقبل.",
   pr_title:"مستقبل Logi Bolt", pr_none:"ما في مستقبل Bolt موصول. ركّب المستقبل بمنفذ USB.", pr_pair:"ربط جهاز جديد", pr_slot:"خانة {0}",
   pr_forget:"افصل", pr_forget_sure:"متأكد؟ اضغط مرة تانية", pr_empty:"ما في أجهزة مربوطة بهالمستقبل.",
   pw_title:"ربط جهاز بـ \u2066Logi Bolt\u2069",
@@ -342,6 +347,11 @@ en:{
   d_diag:"Troubleshooting", d_diag_hint:"If something doesn't work, copy this log and send it.", d_showlog:"Show log", d_folder:"Open app folder",
   d_quit:"Quit Mishk", d_about:"Talks to the mouse over Logitech's HID++ protocol. Inspired by Mouser (MIT licence).",
   saved:"Saved", err:"Error: ",
+  any_mouse:"Any mouse", conn_system:"Through Windows", b_dpiswitch:"DPI button", native_dpiswitch:"Switch speed",
+  pr_title_uni:"Unifying receiver", pw_title_uni:"Pair with a Unifying receiver", pw_u1:"Turn the mouse off with the switch underneath.", pw_u2:"Turn it back on. It pairs by itself within a few seconds.", pw_wait:"Waiting for the device…", pw_err_full:"The receiver is full. Unpair a device first.",
+  s_windows:"Windows mouse settings", s_windows_hint:"These apply to every mouse, from any brand.", s_wspeed:"Windows pointer speed", s_waccel:"Enhance pointer precision (acceleration)", s_lines:"Lines per scroll notch",
+  lag_title:"Mouse lagging or stuttering?", lag_anim:"Windows animation effects", lag_anim_hint:"For many people, turning these off stops pointer stutter on Windows 11.",
+  lag_tips:"If it still stutters, it's usually radio interference at the receiver:", lag_t1:"Move the Bolt receiver away from blue USB 3 ports, or put it on an extension cable or a USB 2.0 hub closer to the mouse.", lag_t2:"Keep the receiver about a metre from the mouse, away from your router and other receivers.", lag_t3:"Or use Bluetooth instead of the receiver.",
   pr_title:"Logi Bolt receiver", pr_none:"No Bolt receiver plugged in. Plug it into a USB port.", pr_pair:"Pair a new device", pr_slot:"Slot {0}",
   pr_forget:"Unpair", pr_forget_sure:"Sure? Click again", pr_empty:"Nothing is paired with this receiver.",
   pw_title:"Pair with Logi Bolt",
@@ -376,7 +386,7 @@ const CATALOG = [
   ["grp_custom", ["keys","run"]],
 ];
 const WHEEL = ["default","zoom","volume","tabs","brush","undoredo","arrows","desktops","custom"];
-const BTN_KEYS = ["gesture","back","forward","middle","top","thumb"];
+const BTN_KEYS = ["gesture","back","forward","middle","top","dpiswitch","thumb"];
 
 function actKey(a){ if(!a) return "inherit"; if(["builtin","media","mouse"].includes(a.type)) return a.type+":"+a.value; return a.type; }
 function keyAct(k){ const i=k.indexOf(":"); return i<0 ? {type:k} : {type:k.slice(0,i), value:k.slice(i+1)}; }
@@ -417,7 +427,9 @@ const mock = (() => {
     profiles:[{id:"p1",name:"Photoshop",exe:"photoshop.exe",buttons:{back:{type:"keys",value:"Space"},forward:{type:"builtin",value:"precision"}},thumb:{type:"brush"}}]};
   const dev = {key:"bolt#2",name:"MX Master 3S",conn:"bolt",online:true,ready:true,mouse:true,battery:25,charging:false,dpi:1600,dpiMin:200,dpiMax:8000,dpiStep:50,hasDpi:true,hasSmartShift:true,hasTorque:true,ssMode:"smart",ssSensitivity:10,ssTorque:50,hasHiRes:true,smoothScroll:true,invertScroll:false,hasThumb:true,invertThumb:false,hosts:3,curHost:0,buttons:["gesture","back","forward","middle","top"],gestures:true};
   const st = {version:"1.0.0",devices:[{...dev, link:"bolt", slot:1}],config:cfg,optionsPlus:true,autostart:true,dataDir:"C:\\Users\\you\\AppData\\Roaming\\Mishk",
-    receivers:[{id:"bolt",kind:"bolt",name:"Logi Bolt",devices:1}], pairing:null};
+    receivers:[{id:"bolt",kind:"bolt",name:"Logi Bolt",devices:1}], pairing:null, sys:{speed:10,accel:true,scrollLines:3,animations:true}};
+  st.devices.push({key:"generic",name:"Any mouse",conn:"system",online:true,ready:true,mouse:true,battery:-1,generic:true,buttons:["back","forward","middle"],gestures:true});
+  if(location.hash.includes("generic")) st.devices = st.devices.filter(d=>d.generic);
   return async (cmd, arg) => {
     if(location.hash==="#nodev") st.devices=[];
     switch(cmd){
@@ -434,6 +446,7 @@ const mock = (() => {
         setTimeout(()=>{ st.pairing = {active:true, stage:"passkey", name:"MX Master 3S", kind:"mouse", passkey:"000613", clicks:["right","left","left","right","right","left","left","right","left","right"], pressed:3}; window.__mishkPush(JSON.parse(JSON.stringify(st))); }, 1800);
         return true;
       case "cancelPairing": case "clearPairing": st.pairing = null; return true;
+      case "setAnimations": st.sys.animations = arg; return st.sys;
       case "unpair": st.devices = st.devices.filter(d=>d.key!==arg); return true;
       case "photo": return st._photo || "";
       case "setPhoto": st._photo = arg; st.config.mousePhoto = arg ? "mouse-photo.jpg" : ""; if(!arg){ st.config.photoSpots=null; st.config.photoScale=1; st.config.photoShift=[0,0]; } return JSON.parse(JSON.stringify(st));
@@ -495,6 +508,7 @@ function setAct(btn, a){
 }
 
 /* ================= chrome ================= */
+function devName(d){ return d.generic ? t("any_mouse") : d.name; }
 function renderChrome(){
   L = cfg().lang === "ar" ? "ar" : "en";
   document.documentElement.lang = L; document.documentElement.dir = L==="ar" ? "rtl" : "ltr";
@@ -513,7 +527,7 @@ function renderChrome(){
   let h = "";
   if(d){
     const pct = d.battery, cells = Math.max(0, Math.min(10, Math.round(pct/10)));
-    h = `<div><div class="devname">${esc(d.name)}</div>
+    h = `<div><div class="devname">${esc(devName(d))}</div>
       <div class="devmeta"><span><i class="dot ${d.online?"on":""}"></i> ${esc(d.online?t("online"):t("offline"))}</span><span>${esc(t("conn_"+d.conn))}</span></div></div>`;
     if(pct >= 0) h += `<div class="battery" title="${esc(t("battery"))}"><div><b class="num">${pct}%</b><span>${esc(d.charging?t("charging"):t("battery"))}</span></div>
       <div class="cells ${pct<=15?"low":""}">${Array.from({length:10},(_,i)=>`<i class="${i<cells?"f":""}"></i>`).join("")}</div></div>`;
@@ -527,7 +541,7 @@ function renderChrome(){
 
 /* ================= pages ================= */
 function nodevCard(){
-  const hasBolt = (S.receivers||[]).some(r=>r.kind==="bolt");
+  const hasBolt = (S.receivers||[]).length > 0;
   return `<div class="nodev"><b>${esc(t("nodev_t"))}</b> ${esc(t("nodev_b"))}${hasBolt?` <div style="margin-top:10px"><button class="btn primary" data-pair="">${esc(t("pr_pair"))}</button></div>`:""}</div>`;
 }
 function renderPage(){
@@ -549,19 +563,22 @@ const HS = {
   forward: {x:244, y:303, side:"l", cy:262},
   back:    {x:246, y:337, side:"l", cy:354},
   gesture: {x:228, y:424, side:"l", cy:446},
+  dpiswitch: {x:395, y:203, side:"r", cy:222},
 };
 function knurl(x,y,w,h,n){ let s=""; for(let i=1;i<n;i++){ const yy=y+h*i/n; s+=`<line x1="${x+3}" x2="${x+w-3}" y1="${yy}" y2="${yy}" stroke="var(--knurl)" stroke-width="1.4"/>`; } return s; }
 // Built-in MX Master 3S image and where its buttons are (fractions of the image).
 const BUILTIN_PHOTO = "data:image/webp;base64,{{MOUSE_WEBP}}";
 const BUILTIN_SIZE = [{{MOUSE_W}}, {{MOUSE_H}}];
-const BUILTIN_SPOTS = {middle:[.463,.140], top:[.604,.283], thumb:[.315,.445], forward:[.235,.450], back:[.256,.560], gesture:[.083,.690]};
+const BUILTIN_SPOTS = {dpiswitch:[.604,.283], middle:[.463,.140], top:[.604,.283], thumb:[.315,.445], forward:[.235,.450], back:[.256,.560], gesture:[.083,.690]};
 const BUILTIN_BOX = {x:194, y:30, w:372, h:500};
 function builtinRect(){
   const b = BUILTIN_BOX, [w,h] = BUILTIN_SIZE, r = Math.min(b.w/w, b.h/h);
   return {x: b.x + (b.w - w*r)/2, y: b.y + (b.h - h*r)/2, w: w*r, h: h*r};
 }
+function useBuiltin(){ const d = dev(); return !d || /mx master 3/i.test(d.name || ""); }
 function spot(k){
   const c = cfg();
+  if(!UI.photo && !useBuiltin()) return HS[k];
   if(UI.photo){
     if(c.photoSpots && c.photoSpots[k]) { const [x,y] = c.photoSpots[k]; return {...HS[k], x, y}; }
     return HS[k];
@@ -586,7 +603,7 @@ function mouseSVG(sel, has){
   }).join("");
   const dots = BTN_KEYS.map(k=>{ const p=spot(k); if(!has(k)) return ""; return `<g class="hs" data-btn="${k}" data-spot="${k}">${UI.photo?`<circle class="halo" cx="${p.x}" cy="${p.y}" r="14"/>`:""}<circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/><circle class="hsdot ${k===sel?"sel":""}" cx="${p.x}" cy="${p.y}" r="${UI.photo?7:5.5}"/></g>`; }).join("");
   if(UI.photo) return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">${photoSVG()}${leads}${dots}</svg>`;
-  if(BUILTIN_PHOTO.length > 40){ const r = builtinRect();
+  if(BUILTIN_PHOTO.length > 40 && useBuiltin()){ const r = builtinRect();
     return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg"><image href="${BUILTIN_PHOTO}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>${leads}${dots}</svg>`; }
   return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">
   <defs><linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--body-2)"/><stop offset="1" stop-color="var(--body)"/></linearGradient></defs>
@@ -646,7 +663,7 @@ function editor(){
     return h + `</section>`;
   }
   const cur = actKey(a);
-  h += `<div class="field"><label for="asel">${esc(t("ed_action"))}</label><select id="asel">${options(cur,{gestures:k==="gesture"&&(dev()?.gestures!==false), inherit})}</select></div>`;
+  h += `<div class="field"><label for="asel">${esc(t("ed_action"))}</label><select id="asel">${options(cur,{gestures:(k==="gesture"&&(dev()?.gestures!==false)) || (!!dev()?.generic && ["back","forward","middle"].includes(k)), inherit})}</select></div>`;
   if(a.type==="keys") h += capture("kcap", t("ed_keys"), a.value) + `<p class="hint">${esc(t("ed_keys_hint"))}</p>`;
   if(a.type==="run") h += `<div class="field"><label for="runp">${esc(t("ed_run"))}</label><input type="text" id="runp" dir="ltr" value="${esc(a.value||"")}" placeholder="${esc(t("ed_run_ph"))}"></div>`;
   if(a.type==="gestures"){
@@ -774,16 +791,18 @@ function sliderRow(id, label, val, min, max, step, unit, hint){
     <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" style="grid-column:1/-1"><div class="ends num" style="grid-column:1/-1"><span>${min}</span><span>${max}</span></div>${hint?`<p class="hint" style="grid-column:1/-1;margin:0">${esc(hint)}</p>`:""}</div>`;
 }
 function pageScroll(){
-  const d = dev() || {dpiMin:200,dpiMax:8000,dpiStep:50,dpi:cfg().dpi||1000,hasSmartShift:true,hasTorque:true,hasHiRes:true,hasThumb:true,ssMode:"smart",ssSensitivity:10,ssTorque:50};
+  const d = dev() || {hasDpi:true,dpiMin:200,dpiMax:8000,dpiStep:50,dpi:cfg().dpi||1000,hasSmartShift:true,hasTorque:true,hasHiRes:true,hasThumb:true,ssMode:"smart",ssSensitivity:10,ssTorque:50};
   const c = cfg();
   const ss = c.smartShift || {mode:d.ssMode||"smart", sensitivity:d.ssSensitivity && d.ssSensitivity<=50 ? d.ssSensitivity : 10, torque:d.ssTorque||50};
   const dpi = c.dpi || d.dpi || 1000;
   let h = `<div class="section">`;
   if(!dev()) h += nodevCard();
+  if(d.hasDpi){
   h += `<h2>${esc(t("s_speed"))}</h2>` + sliderRow("dpi", t("s_dpi"), dpi, d.dpiMin, d.dpiMax, d.dpiStep, "");
   h += `<div class="row"><div class="lbl"><b>${esc(t("s_presets"))}</b><p class="hint">${esc(t("s_presets_hint"))}</p></div>
     <div style="display:flex;gap:6px;direction:ltr">${[0,1,2].map(i=>`<input type="text" class="num" data-preset="${i}" value="${c.dpiPresets[i]??""}" style="width:76px;text-align:center">`).join("")}</div></div>`;
   h += sliderRow("pdpi", t("s_precision"), c.precisionDpi, d.dpiMin, 2000, d.dpiStep, "", t("s_precision_hint"));
+  }
   if(d.hasSmartShift){
     h += `<h2>${esc(t("s_wheel"))}</h2><div class="row"><div class="lbl"><b>${esc(t("s_mode"))}</b></div><div class="seg" role="group">` +
       ["smart","ratchet","free"].map(m=>`<button data-ss="${m}" aria-pressed="${ss.mode===m}">${esc(t("m_"+m))}</button>`).join("") + `</div></div>`;
@@ -795,6 +814,12 @@ function pageScroll(){
     h += toggleRow("inv", t("s_invert"), c.invertScroll ?? d.invertScroll);
   }
   if(d.hasThumb) h += toggleRow("invt", t("s_invert_thumb"), c.invertThumb ?? d.invertThumb);
+  if(S.sys){
+    h += `<h2>${esc(t("s_windows"))}</h2><p class="hint">${esc(t("s_windows_hint"))}</p>`;
+    h += sliderRow("wspeed", t("s_wspeed"), c.winSpeed || S.sys.speed, 1, 20, 1, "");
+    h += toggleRow("waccel", t("s_waccel"), c.winAccel ?? S.sys.accel);
+    h += sliderRow("wlines", t("s_lines"), c.scrollLines || S.sys.scrollLines, 1, 20, 1, "");
+  }
   h += `<h2>${esc(t("s_gest"))}</h2>` + sliderRow("gdist", t("s_gdist"), c.gestureDistance, 20, 200, 5, "");
   return h + `</div>`;
 }
@@ -807,11 +832,14 @@ bind.scroll = () => {
   live("dpi", v => c.dpi = v);
   live("pdpi", v => c.precisionDpi = v);
   live("gdist", v => c.gestureDistance = v);
+  live("wspeed", v => c.winSpeed = v);
+  live("wlines", v => c.scrollLines = v);
   const ssCur = () => c.smartShift || (c.smartShift = {mode:d?.ssMode||"smart", sensitivity:(d&&d.ssSensitivity<=50?d.ssSensitivity:10)||10, torque:d?.ssTorque||50});
   live("sens", v => ssCur().sensitivity = v);
   live("torque", v => ssCur().torque = v, "%");
   document.querySelectorAll("[data-ss]").forEach(b => b.onclick = () => { ssCur().mode = b.dataset.ss; save(); renderPage(); });
   const tog = (id, key) => { const el=$("#"+id); if(el) el.onchange = () => { c[key] = el.checked; save(); }; };
+  tog("waccel","winAccel");
   tog("smooth","smoothScroll"); tog("inv","invertScroll"); tog("invt","invertThumb");
   document.querySelectorAll("[data-preset]").forEach(inp => inp.onchange = () => {
     const v = parseInt(inp.value,10); const arr = c.dpiPresets.slice(); if(v>=100) arr[+inp.dataset.preset]=v; else arr.splice(+inp.dataset.preset,1);
@@ -861,17 +889,22 @@ function pageDevice(){
   let h = `<div class="section">`;
   h += `<h2>${esc(t("d_device"))}</h2>`;
   if(!d) h += nodevCard();
-  if(d && d.hosts > 1) h += `<div class="row"><div class="lbl"><b>${esc(t("d_hosts"))}</b><p class="hint">${esc(t("d_hosts_hint"))}</p></div><div class="hosts">` +
+  if(d && !d.generic && d.hosts > 1) h += `<div class="row"><div class="lbl"><b>${esc(t("d_hosts"))}</b><p class="hint">${esc(t("d_hosts_hint"))}</p></div><div class="hosts">` +
     Array.from({length:d.hosts},(_,i)=>`<button class="host num" data-host="${i}" aria-pressed="${i===d.curHost}">${i+1}</button>`).join("") + `</div></div>`;
   h += `<div class="row"><div class="lbl"><b>${esc(t("d_refresh"))}</b></div><button class="btn" id="refresh">${esc(t("d_refresh"))}</button></div>`;
   h += `<h2>${htx("pr_title")}</h2>`;
-  const recs = (S.receivers||[]).filter(r=>r.kind==="bolt");
+  const recs = S.receivers||[];
   if(!recs.length) h += `<p class="hint">${htx("pr_none")}</p>`;
   for(const r of recs){
+    if(r.kind!=="bolt") h += `<p style="margin:14px 0 0;font-weight:500">${esc(t("pr_title_uni"))}</p>`;
     const list = (S.devices||[]).filter(x=>x.link===r.id);
     h += `<div class="dlist">` + (list.length ? list.map(x=>`<div class="prow"><div class="ico">${x.mouse?"🖱":"⌨"}</div><div class="nm"><b>${esc(x.name)}</b><small>${esc(t("pr_slot", x.slot))} · ${esc(x.online?t("online"):t("offline"))}</small></div>
       <button class="btn ghost danger" data-unpair="${esc(x.key)}">${esc(t("pr_forget"))}</button></div>`).join("") : `<p class="hint">${esc(t("pr_empty"))}</p>`) + `</div>
       <div class="row" style="border:0"><div class="lbl"></div><button class="btn primary" data-pair="${esc(r.id)}">${esc(t("pr_pair"))}</button></div>`;
+  }
+  if(S.sys){
+    h += `<h2>${esc(t("lag_title"))}</h2>` + toggleRow("anim", t("lag_anim"), S.sys.animations, t("lag_anim_hint"));
+    h += `<p class="hint" style="margin-top:10px">${esc(t("lag_tips"))}</p><ul class="hint" style="margin:6px 0 0;padding-inline-start:20px"><li>${esc(t("lag_t1"))}</li><li>${esc(t("lag_t2"))}</li><li>${esc(t("lag_t3"))}</li></ul>`;
   }
   h += `<h2>${esc(t("d_app"))}</h2>`;
   h += `<div class="row"><div class="lbl"><b>${esc(t("d_lang"))}</b></div><div class="seg"><button data-lang="ar" aria-pressed="${L==="ar"}">العربية</button><button data-lang="en" aria-pressed="${L==="en"}">English</button></div></div>`;
@@ -896,6 +929,7 @@ bind.device = () => {
   document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => { c.theme = b.dataset.themeSet; save(true); renderChrome(); renderPage(); });
   $("#auto").onchange = async e => { await api("setAutostart", e.target.checked); S.autostart = e.target.checked; toast(t("saved")); };
   $("#mini").onchange = e => { c.startMinimized = e.target.checked; save(); };
+  const an = $("#anim"); if(an) an.onchange = async e => { try { S.sys = await api("setAnimations", e.target.checked) || S.sys; toast(t("saved")); } catch(err){ toast(t("err")+(err.message||err)); } };
   $("#lowbat").onchange = e => { c.lowBatteryAlert = e.target.checked; save(); };
   $("#exp").onclick = async () => { try{ await api("exportConfig"); toast(t("d_exported")); }catch(e){ toast(t("err")+e); } };
   $("#imp").onclick = () => $("#importFile").click();
@@ -984,6 +1018,9 @@ function renderModal(){
   let body = "", acts = "";
   const cancel = `<button class="btn" id="pwCancel">${esc(t("pw_cancel"))}</button>`;
   switch(p.stage){
+    case "waiting":
+      body = `<ol class="steps"><li>${esc(t("pw_u1"))}</li><li>${esc(t("pw_u2"))}</li></ol><div class="wait"><span class="spin"></span>${esc(t("pw_wait"))}</div>`;
+      acts = cancel; break;
     case "discovering":
       body = `<ol class="steps"><li>${esc(t("pw_s1"))}</li><li>${esc(t("pw_s2"))}</li><li>${esc(t("pw_s3"))}</li></ol>
         <div class="wait"><span class="spin"></span>${esc(t("pw_search"))}</div>`;
@@ -1006,7 +1043,7 @@ function renderModal(){
       body = `<p style="font-weight:600;margin:0 0 6px">${esc(t("pw_fail"))}</p><p class="hint">${esc(t("pw_err_"+(p.error||"failed")))}</p>`;
       acts = `<button class="btn" id="pwClose">${esc(t("pw_close"))}</button><button class="btn primary" data-pair="${esc(p.link||"")}">${esc(t("pw_retry"))}</button>`;
   }
-  el.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwT"><div class="dialog"><h3 id="pwT">${htx("pw_title")}</h3>${body}<div class="acts">${acts}</div></div></div>`;
+  el.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwT"><div class="dialog"><h3 id="pwT">${p.unifying ? esc(t("pw_title_uni")) : htx("pw_title")}</h3>${body}<div class="acts">${acts}</div></div></div>`;
   const c = $("#pwCancel"); if(c) c.onclick = () => { api("cancelPairing"); S.pairing = null; renderModal(); };
   const x = $("#pwClose"); if(x) x.onclick = () => { api("clearPairing"); S.pairing = null; renderModal(); renderPage(); };
 }
@@ -1019,7 +1056,7 @@ document.addEventListener("contextmenu", e => { if(!e.target.closest("textarea,i
 (async function start(){
   S = await api("state");
   try { UI.photo = (await api("photo")) || ""; } catch(e){ UI.photo = ""; }
-  if(location.hash.startsWith("#page=")) UI.page = location.hash.slice(6);
+  if(location.hash.startsWith("#page=")) UI.page = location.hash.slice(6).split("&")[0];
   if(location.hash==="#en") S.config.lang = "en";
   if(location.hash==="#light") S.config.theme = "light";
   renderChrome(); renderPage(); renderModal();

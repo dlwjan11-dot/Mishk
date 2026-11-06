@@ -88,6 +88,7 @@ func (a *App) handle(cmd string, arg json.RawMessage, hwnd uintptr) (any, error)
 			return nil, err
 		}
 		setDarkTitleBar(hwnd, c.Theme != "light")
+		updateHook(a.engine, false)
 		pPostMessageW.Call(a.tray.hwnd, wmRefresh, 0, 0)
 		return a.state(), nil
 	case "switchHost":
@@ -214,6 +215,10 @@ func (a *App) handle(cmd string, arg json.RawMessage, hwnd uintptr) (any, error)
 		_ = json.Unmarshal(arg, &key)
 		a.engine.Unpair(key)
 		return true, nil
+	case "setAnimations":
+		var on bool
+		_ = json.Unmarshal(arg, &on)
+		return a.engine.Sys(), a.engine.SetAnimations(on)
 	case "openUrl":
 		var u string
 		_ = json.Unmarshal(arg, &u)

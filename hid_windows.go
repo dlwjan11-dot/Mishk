@@ -96,10 +96,10 @@ func groupKey(path string) string {
 }
 
 type hidGroup struct {
-	key           string
-	pid           uint16
-	product       string
-	short, long   *hidInfo
+	key         string
+	pid         uint16
+	product     string
+	short, long *hidInfo
 }
 
 func isReceiverPID(pid uint16) bool { return pid&0xFF00 == 0xC500 }

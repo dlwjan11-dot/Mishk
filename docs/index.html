@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mishk — a light Logi Options+ alternative for Windows</title>
+<meta name="description" content="Free, open-source app to remap Logitech MX Master buttons and any mouse on Windows. One small file, no account, Arabic and English.">
+<meta property="og:title" content="Mishk — a light Logi Options+ alternative">
+<meta property="og:description" content="Remap your Logitech MX Master or any mouse on Windows. Free, open source, one 3.7 MB file.">
+<meta property="og:image" content="https://dlwjan11-dot.github.io/Mishk/buttons-en.png">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#17191c; --panel:#1f2226; --raise:#262a2f; --line:#353a41; --line-2:#454b54;
+  --text:#eceef0; --muted:#98a1ac; --faint:#6b737d;
+  --amber:#f0b040; --amber-ink:#1d1606; --amber-soft:rgba(240,176,64,.14); --ok:#5ccb8a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:400 17px/1.6 "IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+[data-lang="ar"] .en,[data-lang="en"] .ar{display:none!important}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:14px;padding:18px 0}
+.top .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:19px;text-decoration:none}
+.top .logo img{width:32px;height:32px;border-radius:8px}
+.top nav{margin-inline-start:auto;display:flex;gap:6px;align-items:center}
+.top nav a{text-decoration:none;color:var(--muted);padding:6px 10px;border-radius:7px;font-size:15px}
+.top nav a:hover{color:var(--text);background:var(--raise)}
+.lang{border:1px solid var(--line-2);background:none;color:var(--text);border-radius:999px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.lang:hover{border-color:var(--amber)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:40px;align-items:center;padding:48px 0 72px}
+.hero h1{font-size:clamp(38px,5vw,60px);line-height:1.08;margin:0 0 18px;font-weight:700;letter-spacing:-.5px}
+[data-lang="ar"] .hero h1{letter-spacing:0;line-height:1.25}
+.hero p.lead{font-size:20px;color:var(--muted);margin:0 0 28px;max-width:30em}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:10px;padding:13px 22px;font-weight:600;text-decoration:none;border:1px solid var(--line-2);background:var(--raise)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn svg{width:20px;height:20px}
+.fine{color:var(--faint);font-size:14px;margin-top:14px}
+
+.stage{position:relative;aspect-ratio:760/600;direction:ltr}
+.stage img{position:absolute;left:24%;top:2%;width:50%;filter:drop-shadow(0 30px 50px rgba(0,0,0,.55))}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.tag{position:absolute;transform:translateY(-50%);background:var(--panel);border:1px solid var(--line-2);border-radius:9px;padding:6px 11px;font-size:13.5px;line-height:1.35;white-space:nowrap;opacity:0;animation:pop .45s ease forwards}
+.tag small{display:block;color:var(--muted);font-size:11.5px}
+.tag b{font-weight:500}
+.lead-line{stroke:var(--line-2);stroke-width:1.3;fill:none;stroke-dasharray:240;stroke-dashoffset:240;animation:draw .7s ease forwards}
+.dot{fill:var(--amber);opacity:0;animation:pop .3s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tag,.dot{animation:none;opacity:1}.lead-line{animation:none;stroke-dashoffset:0}}
+
+/* sections */
+section{padding:72px 0;border-top:1px solid var(--line)}
+section h2{font-size:clamp(28px,3.2vw,38px);margin:0 0 10px;font-weight:700;line-height:1.2}
+section .intro{color:var(--muted);max-width:40em;margin:0 0 36px;font-size:18px}
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.why h3{font-size:19px;margin:0 0 6px;font-weight:600}
+.why p{margin:0;color:var(--muted)}
+.why .n{unicode-bidi:isolate;font-size:34px;font-weight:700;color:var(--amber);line-height:1;margin-bottom:12px;font-variant-numeric:tabular-nums}
+
+.feats{display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px}
+.feat{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
+.feat svg{flex:none;width:26px;height:26px;color:var(--amber);margin-top:3px}
+.feat h3{margin:0 0 3px;font-size:17.5px;font-weight:600}
+.feat p{margin:0;color:var(--muted);font-size:15.5px}
+
+.shots{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.shots figure{margin:0}
+.shots img{width:100%;border-radius:12px;border:1px solid var(--line);display:block}
+.shots .side{display:grid;gap:18px}
+.shots figcaption{color:var(--faint);font-size:14px;margin-top:8px}
+
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{text-align:start;padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:14px}
+td:first-child{font-weight:500}
+.yes{color:var(--ok)}
+
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:0;margin:0;list-style:none}
+.steps li{counter-increment:s}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--amber);color:var(--amber);font-weight:600;margin-bottom:12px}
+.steps b{display:block;margin-bottom:4px}
+.steps span{color:var(--muted)}
+
+details{border-bottom:1px solid var(--line);padding:16px 0}
+summary{cursor:pointer;font-weight:500;font-size:17.5px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::after{content:"+";color:var(--amber);font-size:22px;line-height:1}
+details[open] summary::after{content:"−"}
+details p{color:var(--muted);margin:10px 0 0;max-width:46em}
+
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--faint);font-size:14px}
+footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;padding-top:24px}
+  .why,.steps{grid-template-columns:1fr}
+  .feats{grid-template-columns:1fr}
+  .shots{grid-template-columns:1fr}
+  .top nav a{display:none}
+  .tag{font-size:11.5px;padding:4px 8px}
+  .tag small{display:none}
+}
+</style>
+</head>
+<body data-lang="en">
+<div class="wrap">
+  <div class="top">
+    <a class="logo" href="#"><img src="icon.png" alt=""> Mishk</a>
+    <nav>
+      <a href="#features"><span class="en">Features</span><span class="ar">المميزات</span></a>
+      <a href="#mice"><span class="en">Mice</span><span class="ar">الماوسات</span></a>
+      <a href="#faq"><span class="en">FAQ</span><span class="ar">أسئلة</span></a>
+      <a href="https://github.com/dlwjan11-dot/Mishk">GitHub</a>
+      <button class="lang" id="lang" type="button"><span class="en">العربية</span><span class="ar">English</span></button>
+    </nav>
+  </div>
+
+  <div class="hero">
+    <div>
+      <h1><span class="en">Your mouse, without Logi Options+.</span><span class="ar">ماوسك، بدون <bdi dir="ltr">Logi Options+</bdi>.</span></h1>
+      <p class="lead">
+        <span class="en">Mishk is a free, tiny Windows app that remaps your Logitech MX Master's buttons, gestures and thumb wheel, and the side buttons of almost any other mouse. One 3.7 MB file. No account, no cloud, no crashes.</span>
+        <span class="ar">Mishk برنامج مجاني وصغير لويندوز، بيغيّر وظيفة أزرار ماوس لوجيتك MX Master، والإيماءات، والعجلة الجانبية، وكمان الأزرار الجانبية لأغلب الماوسات التانية. ملف واحد 3.7MB، بدون حساب، بدون إنترنت، وبدون تعليق.</span>
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+          <span class="en">Download for Windows</span><span class="ar">نزّل لويندوز</span></a>
+        <a class="btn" href="https://github.com/dlwjan11-dot/Mishk"><span class="en">View the code</span><span class="ar">شوف الكود</span></a>
+      </div>
+      <p class="fine"><span class="en">Windows 10 and 11 · Free and open source (MIT)</span><span class="ar">ويندوز 10 و11 · مجاني ومفتوح المصدر (MIT)</span></p>
+    </div>
+
+    <div class="stage" aria-label="MX Master 3S with Mishk's button actions">
+      <img src="mouse.webp" alt="Logitech MX Master 3S">
+      <svg viewBox="0 0 760 600" aria-hidden="true">
+        <polyline class="lead-line" style="animation-delay:.2s" points="358,83 470,64 560,64"/>
+        <polyline class="lead-line" style="animation-delay:.35s" points="411,156 480,206 560,206"/>
+        <polyline class="lead-line" style="animation-delay:.5s" points="302,239 240,250 200,250"/>
+        <polyline class="lead-line" style="animation-delay:.65s" points="279,298 230,350 200,350"/>
+        <polyline class="lead-line" style="animation-delay:.8s" points="214,364 205,470 200,470"/>
+        <circle class="dot" style="animation-delay:.2s" cx="358" cy="83" r="6"/>
+        <circle class="dot" style="animation-delay:.35s" cx="411" cy="156" r="6"/>
+        <circle class="dot" style="animation-delay:.5s" cx="302" cy="239" r="6"/>
+        <circle class="dot" style="animation-delay:.65s" cx="279" cy="298" r="6"/>
+        <circle class="dot" style="animation-delay:.8s" cx="214" cy="364" r="6"/>
+      </svg>
+      <div class="tag" style="left:74%;top:10.7%;animation-delay:.6s"><small class="en">Wheel</small><small class="ar">العجلة</small><b class="en">SmartShift</b><b class="ar">SmartShift</b></div>
+      <div class="tag" style="left:74%;top:34.3%;animation-delay:.75s"><small class="en">Top button</small><small class="ar">الزر العلوي</small><b class="en">Precision mode</b><b class="ar">وضع الدقة</b></div>
+      <div class="tag" style="right:74%;top:41.7%;animation-delay:.9s"><small class="en">Thumb wheel</small><small class="ar">العجلة الجانبية</small><b class="en">Brush size</b><b class="ar">حجم الفرشاة</b></div>
+      <div class="tag" style="right:74%;top:58.3%;animation-delay:1.05s"><small class="en">Back</small><small class="ar">رجوع</small><b class="en">Hold for Space</b><b class="ar">Space طالما ضاغط</b></div>
+      <div class="tag" style="right:74%;top:78.3%;animation-delay:1.2s"><small class="en">Gesture button</small><small class="ar">زر الإيماءات</small><b class="en">Swipe for desktops</b><b class="ar">اسحب لأسطح المكتب</b></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2><span class="en">Why people switch</span><span class="ar">ليش الناس بتبدّل</span></h2>
+    <p class="intro"><span class="en">Options+ is heavy, crashes, and sometimes vanishes from the tray, taking your button settings with it. Mishk was built to just work.</span><span class="ar">برنامج <bdi dir="ltr">Options+</bdi> تقيل، وبيعلّق، وأحياناً بيختفي من الـ tray وبتروح معه إعدادات الأزرار. Mishk انعمل ليشتغل وبس.</span></p>
+    <div class="why">
+      <div><div class="n" dir="ltr" style="text-align:start">3.7 MB</div><h3><span class="en">One small file</span><span class="ar">ملف واحد صغير</span></h3><p><span class="en">No installer, no background services, no account. It opens instantly and frees its memory when you close the window.</span><span class="ar">بدون تنصيب، بدون خدمات بالخلفية، وبدون حساب. بيفتح فوراً، وبيفضّي الذاكرة لما تسكّر النافذة.</span></p></div>
+      <div><div class="n">0</div><h3><span class="en">Mouse hooks for Logitech</span><span class="ar">بدون hook للوجيتك</span></h3><p><span class="en">Your MX Master reports its buttons straight to Mishk over Logitech's own HID++ protocol, so Windows can't silently drop them.</span><span class="ar">ماوس MX Master بيبعت ضغطات الأزرار مباشرة لـ Mishk ببروتوكول لوجيتك نفسه، فويندوز ما بيقدر يوقفها.</span></p></div>
+      <div><div class="n">2</div><h3><span class="en">Languages</span><span class="ar">لغتين</span></h3><p><span class="en">English and Arabic, with a proper right-to-left layout. Dark and light themes.</span><span class="ar">إنجليزي وعربي، والعربي مرتّب من اليمين لليسار. وفي مظهر غامق وفاتح.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2><span class="en">Everything you used Options+ for</span><span class="ar">كل شي كنت تستعمل <bdi dir="ltr">Options+</bdi> لأجله</span></h2>
+    <p class="intro"><span class="en">And a few things it never did.</span><span class="ar">وكم شغلة ما كان يعملها أبداً.</span></p>
+    <div class="feats">
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c-3.6 0-6 2.6-6 6.3v5.4C6 18.4 8.5 21 12 21s6-2.6 6-6.3V9.3C18 5.6 15.6 3 12 3Z"/><path d="M12 3v7"/></svg><div><h3><span class="en">Remap every button</span><span class="ar">غيّر وظيفة كل زر</span></h3><p><span class="en">Over 60 actions, keyboard shortcuts, mouse clicks, or open any app or link.</span><span class="ar">أكتر من 60 أمر، اختصارات كيبورد، نقرات ماوس، أو فتح أي برنامج أو رابط.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M6 11l6-6 6 6"/></svg><div><h3><span class="en">Gestures</span><span class="ar">الإيماءات</span></h3><p><span class="en">Hold the gesture button and swipe up, down, left or right. Five actions on one button.</span><span class="ar">اضغط زر الإيماءات واسحب لفوق أو تحت أو يمين أو يسار. خمس أوامر على زر واحد.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6M14 17h6"/></svg><div><h3><span class="en">Per-app profiles</span><span class="ar">إعدادات لكل برنامج</span></h3><p><span class="en">Photoshop, Premiere, Figma, Chrome… each gets its own buttons, switched automatically.</span><span class="ar">فوتوشوب، بريمير، فيغما، كروم… كل برنامج إله أزراره، وبتتبدّل لحالها.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h3M17 12h3M9 7l3-3 3 3M9 17l3 3 3-3"/><circle cx="12" cy="12" r="2.5"/></svg><div><h3><span class="en">Hold-to-press shortcuts</span><span class="ar">اختصارات بتضل مضغوطة</span></h3><p><span class="en">Keys stay held while you hold the button, like Space for the Hand tool. Options+ can't.</span><span class="ar">الاختصار بيضل مضغوط طالما إنت ضاغط الزر، متل Space للـ Hand tool. <bdi dir="ltr">Options+</bdi> ما بيعملها.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg><div><h3><span class="en">Precision mode</span><span class="ar">وضع الدقة</span></h3><p><span class="en">Hold a button to slow the pointer for careful work, let go to return to normal speed.</span><span class="ar">اضغط زر ليبطّئ المؤشر للشغل الدقيق، وفلته لترجع السرعة.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="18" rx="3"/><path d="M12 7v3"/></svg><div><h3><span class="en">Thumb wheel that does more</span><span class="ar">عجلة جانبية بتعمل أكتر</span></h3><p><span class="en">Zoom, brush size, volume, tabs, undo/redo or timeline frames, per app.</span><span class="ar">زوم، حجم الفرشاة، الصوت، التبويبات، تراجع وإعادة، أو فريمات التايملاين، لكل برنامج.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><div><h3><span class="en">DPI and SmartShift</span><span class="ar">السرعة وSmartShift</span></h3><p><span class="en">Pointer speed with presets, SmartShift sensitivity, ratchet force, smooth and reversed scrolling.</span><span class="ar">سرعة المؤشر مع سرعات جاهزة، حساسية SmartShift، قوة التكّات، وتمرير ناعم أو معكوس.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 7h10v10H7z"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4"/></svg><div><h3><span class="en">Pair with Logi Bolt</span><span class="ar">اربط مع Logi Bolt</span></h3><p><span class="en">First-time pairing with Bolt and Unifying receivers, no Logitech app needed.</span><span class="ar">ربط لأول مرة مع مستقبلات Bolt وUnifying، بدون أي برنامج من لوجيتك.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10v4"/><path d="M6 10h5v4H6z" fill="currentColor"/></svg><div><h3><span class="en">Battery and Easy-Switch</span><span class="ar">البطارية وEasy-Switch</span></h3><p><span class="en">Battery in the tray, a low battery alert, and switching computers from the app.</span><span class="ar">البطارية بالـ tray، تنبيه لما تضعف، وتنقل الماوس بين الأجهزة من البرنامج.</span></p></div></div>
+      <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><div><h3><span class="en">Settings that come back</span><span class="ar">الإعدادات بترجع لحالها</span></h3><p><span class="en">When the mouse wakes up or reconnects, Mishk puts your settings back by itself.</span><span class="ar">لما يصحى الماوس أو يرجع يتصل، Mishk بيرجّع إعداداتك لحاله.</span></p></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="en">See it</span><span class="ar">شوفه</span></h2>
+    <div class="shots">
+      <figure><img class="en" src="buttons-en.png" alt="Buttons page" loading="lazy"><img class="ar" src="buttons-ar.png" alt="صفحة الأزرار" loading="lazy">
+        <figcaption><span class="en">Click a button on the mouse, pick what it does.</span><span class="ar">اضغط على زر بالصورة، واختار شو بيعمل.</span></figcaption></figure>
+      <div class="side">
+        <figure><img class="en" src="pairing-en.png" alt="Pairing" loading="lazy"><img class="ar" src="pairing-ar.png" alt="الربط" loading="lazy">
+          <figcaption><span class="en">Pairing with Logi Bolt, click by click.</span><span class="ar">الربط مع Logi Bolt، ضغطة ضغطة.</span></figcaption></figure>
+        <figure><img class="en" src="scroll-en.png" alt="Pointer and scroll" loading="lazy"><img class="ar" src="scroll-ar.png" alt="السرعة والتمرير" loading="lazy">
+          <figcaption><span class="en">Pointer speed, SmartShift and scrolling.</span><span class="ar">سرعة المؤشر، SmartShift، والتمرير.</span></figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="mice">
+  <div class="wrap">
+    <h2><span class="en">Works with most mice</span><span class="ar">بيشتغل مع أغلب الماوسات</span></h2>
+    <p class="intro"><span class="en">Built around the MX Master 3S, and useful with almost any mouse.</span><span class="ar">معمول على أساس MX Master 3S، ومفيد مع أغلب الماوسات.</span></p>
+    <table>
+      <thead><tr><th><span class="en">Mouse</span><span class="ar">الماوس</span></th><th><span class="en">What Mishk can do</span><span class="ar">شو بيعمل Mishk</span></th></tr></thead>
+      <tbody>
+        <tr><td>MX Master 3S, MX Master 3</td><td><span class="yes">●</span> <span class="en">Everything: all buttons, gestures, thumb wheel, DPI, SmartShift, battery, Easy-Switch, pairing</span><span class="ar">كل شي: كل الأزرار، الإيماءات، العجلة الجانبية، السرعة، SmartShift، البطارية، Easy-Switch، والربط</span></td></tr>
+        <tr><td>MX Master 4, MX Master 2S</td><td><span class="yes">●</span> <span class="en">Buttons (the MX Master 4 sense panel works as the gesture button), DPI, SmartShift, battery</span><span class="ar">الأزرار (لوحة اللمس بـ MX Master 4 بتشتغل كزر إيماءات)، السرعة، SmartShift، البطارية</span></td></tr>
+        <tr><td>MX Anywhere 3S / 3, MX Vertical, other Logitech HID++ mice</td><td><span class="yes">●</span> <span class="en">The buttons each mouse has (including the MX Vertical DPI button), DPI, battery, pairing</span><span class="ar">الأزرار الموجودة بكل ماوس (مع زر السرعة بـ MX Vertical)، السرعة، البطارية، والربط</span></td></tr>
+        <tr><td><span class="en">Any other mouse, any brand</span><span class="ar">أي ماوس تاني، من أي شركة</span></td><td><span class="yes">●</span> <span class="en">Back, forward and middle buttons (with gestures and per-app profiles), Windows pointer speed, acceleration and scroll lines</span><span class="ar">أزرار الرجوع والتقدّم والزر الأوسط (مع الإيماءات وإعدادات لكل برنامج)، وسرعة المؤشر بويندوز، والتسارع، وعدد أسطر التمرير</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="en">Up and running in a minute</span><span class="ar">بيشتغل خلال دقيقة</span></h2>
+    <ol class="steps">
+      <li><b class="en">Quit Logi Options+</b><b class="ar">سكّر <bdi dir="ltr">Logi Options+</bdi></b><span class="en">Both apps fight over the mouse. Mishk warns you and can close it for you.</span><span class="ar">البرنامجين بيتضاربوا على الماوس. Mishk بينبهك وبيقدر يسكّره عنك.</span></li>
+      <li><b class="en">Download and extract</b><b class="ar">نزّل وفك الضغط</b><span class="en">Right-click the zip, choose Extract All, and run Mishk.exe.</span><span class="ar">كبسة يمين على الـ zip، اختار Extract All، وشغّل Mishk.exe.</span></li>
+      <li><b class="en">Pick your buttons</b><b class="ar">اختار أزرارك</b><span class="en">Click a button on the picture and choose what it does. It saves as you go.</span><span class="ar">اضغط على زر بالصورة واختار شو بيعمل. الإعدادات بتنحفظ لحالها.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2><span class="en">Questions</span><span class="ar">أسئلة</span></h2>
+    <details><summary><span class="en">Windows says "Windows protected your PC". Is it safe?</span><span class="ar">ويندوز بيقول "Windows protected your PC". هل هو آمن؟</span></summary>
+      <p><span class="en">That warning shows for any app that isn't code-signed yet. Click More info, then Run anyway. The full source code is on GitHub for anyone to read and build.</span><span class="ar">هالتحذير بيطلع لأي برنامج لسا مش موقّع. اضغط More info وبعدين Run anyway. الكود كامل على GitHub لأي حدا يقرأه ويبنيه.</span></p></details>
+    <details><summary><span class="en">My mouse lags or stutters. Can Mishk fix it?</span><span class="ar">الماوس عندي بيعلّق أو بيقطّع. Mishk بيصلّحه؟</span></summary>
+      <p><span class="en">Partly. Mishk has a one-click switch for Windows animation effects, which stops stutter for many people on Windows 11. Most other lag is radio interference: move the Bolt receiver away from blue USB 3 ports, put it on an extension cable or USB 2.0 hub closer to the mouse, or use Bluetooth. No app can fix interference by itself.</span><span class="ar">جزئياً. Mishk فيه زر بيطفي تأثيرات الحركة بويندوز، وهاد بيوقف التقطيع عند كتير ناس على ويندوز 11. أغلب التعليق التاني سببه تشويش لاسلكي: بعّد مستقبل Bolt عن منافذ USB 3 الزرقا، أو ركّبه على وصلة تمديد أو hub نوع USB 2.0 قريب من الماوس، أو استعمل Bluetooth. ما في برنامج بيقدر يصلّح التشويش لحاله.</span></p></details>
+    <details><summary><span class="en">Does it work on Mac or Linux?</span><span class="ar">بيشتغل على ماك أو لينكس؟</span></summary>
+      <p><span class="en">Not yet, Mishk is Windows only. On Linux, Solaar is excellent.</span><span class="ar">لسا لأ، Mishk بس لويندوز. على لينكس في برنامج Solaar وهو ممتاز.</span></p></details>
+    <details><summary><span class="en">A shortcut doesn't work in one app.</span><span class="ar">اختصار ما بيشتغل ببرنامج معيّن.</span></summary>
+      <p><span class="en">If that app runs as Administrator, Windows blocks shortcuts from normal apps. Run Mishk as Administrator too.</span><span class="ar">إذا البرنامج شغّال كـ Administrator، ويندوز بيمنع الاختصارات من البرامج العادية. شغّل Mishk كمان كـ Administrator.</span></p></details>
+    <details><summary><span class="en">Something doesn't work with my mouse.</span><span class="ar">في شي ما زبط مع ماوسي.</span></summary>
+      <p><span class="en">Open Device &amp; settings → Show log in Mishk and attach it to a GitHub issue, with your mouse model. That's exactly what's needed to add support.</span><span class="ar">افتح الجهاز والإعدادات ← اعرض السجل جوّا Mishk، وحطّه بـ Issue على GitHub مع اسم الماوس. هاد بالزبط اللي بنحتاجه لنضيف الدعم.</span></p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span><span class="en">Made by Abdulrahman (Abdulmedia). Free and open source under the MIT licence.</span><span class="ar">من عمل عبد الرحمن (Abdulmedia). مجاني ومفتوح المصدر برخصة MIT.</span></span>
+    <span><span class="en">Not affiliated with Logitech. Logitech, Logi, MX Master and Logi Bolt are trademarks of Logitech.</span><span class="ar">مش تابع لشركة لوجيتك. Logitech وLogi وMX Master وLogi Bolt علامات تجارية لشركة لوجيتك.</span></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const saved = (()=>{ try { return localStorage.getItem("mishk-lang"); } catch(e){ return null; } })();
+  const pref = saved || ((navigator.language||"").startsWith("ar") ? "ar" : "en");
+  function set(l){
+    document.body.dataset.lang = l;
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+    document.title = l === "ar" ? "Mishk — بديل خفيف لـ Logi Options+" : "Mishk — a light Logi Options+ alternative for Windows";
+    try { localStorage.setItem("mishk-lang", l); } catch(e){}
+  }
+  set(pref);
+  document.getElementById("lang").onclick = () => set(document.body.dataset.lang === "ar" ? "en" : "ar");
+})();
+</script>
+</body>
+</html>
