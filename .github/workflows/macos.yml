@@ -44,10 +44,19 @@ jobs:
           sleep 8
           if kill -0 $PID 2>/dev/null; then echo "running OK"; kill $PID; else echo "exited early"; cat build/run.log; exit 1; fi
           cat "$HOME/Library/Application Support/Mishk/mishk.log" || true
+      - name: Screenshot of the real window
+        run: |
+          ./build/Mishk.app/Contents/MacOS/Mishk > build/ui.log 2>&1 &
+          PID=$!
+          sleep 10
+          screencapture -x build/screen.png || true
+          kill $PID || true
       - uses: actions/upload-artifact@v4
         with:
           name: Mishk-macOS
-          path: build/Mishk-macOS.zip
+          path: |
+            build/Mishk-macOS.zip
+            build/screen.png
       - name: Publish the download
         run: |
           mkdir -p download

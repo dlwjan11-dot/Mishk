@@ -369,7 +369,21 @@ en:{
   on:"On", off:"Off"
 }};
 let L = "en";
-const t = (k, ...a) => { let s = (T[L][k] ?? T.en[k] ?? k); a.forEach((v,i)=> s = s.replace("{"+i+"}", v)); return s; };
+// macOS wording, used on top of T when the app runs on a Mac.
+const MAC = {
+ar:{ ed_win:"زيد زر Cmd", a_taskview:"Mission Control", a_showdesktop:"إظهار سطح المكتب", a_alttab:"التنقل بين البرامج", a_explorer:"نافذة Finder",
+  a_search:"Spotlight", a_appexpose:"نوافذ البرنامج (App Exposé)", a_maximize:"ملء الشاشة", a_lock:"قفل الشاشة",
+  p_manual:"أو اكتب اسم البرنامج:", p_manual_ph:"Adobe Photoshop 2026",
+  d_autostart:"يفتح لما تسجّل دخول", d_minimized:"يفتح بشريط القوائم بس", conn_system:"عن طريق macOS",
+  ax_t:"Mishk بيحتاج إذن Accessibility.", ax_b:"بدونه ما بيقدر يبعت اختصارات، ولا يغيّر أزرار الماوسات التانية.", ax_btn:"افتح الإعدادات" },
+en:{ ed_win:"Add the Command key", a_taskview:"Mission Control", a_showdesktop:"Show desktop", a_alttab:"Switch apps", a_explorer:"Finder window",
+  a_search:"Spotlight", a_appexpose:"App windows (App Exposé)", a_maximize:"Full screen", a_lock:"Lock screen",
+  p_manual:"Or type the app name:", p_manual_ph:"Adobe Photoshop 2026",
+  d_autostart:"Open at login", d_minimized:"Start in the menu bar only", conn_system:"Through macOS",
+  ax_t:"Mishk needs Accessibility permission.", ax_b:"Without it, it can't send shortcuts or remap other mice.", ax_btn:"Open settings" }};
+const isMac = () => !!(S && S.platform === "mac");
+const SUPER = () => isMac() ? "Cmd" : "Win";
+const t = (k, ...a) => { let s = ((isMac() ? MAC[L][k] : undefined) ?? T[L][k] ?? T.en[k] ?? k); a.forEach((v,i)=> s = s.replace("{"+i+"}", v)); return s; };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = s => document.querySelector(s);
 const htx = (k, ...a) => esc(t(k, ...a)).replace(/\u2066(.*?)\u2069/g, '<bdi dir="ltr">$1</bdi>');
@@ -403,11 +417,13 @@ function actLabel(a, btn){
   }
 }
 function wheelLabel(w){ if(!w || w.type==="inherit") return t("w_inherit"); if(w.type==="custom") return [w.left,w.right].filter(Boolean).join(" / ") || t("w_custom"); return t("w_"+w.type); }
+const WIN_ONLY = new Set(["builtin:snapleft","builtin:snapright","builtin:clipboard"]);
 function options(cur, {gestures=false, inherit=false, keyOnly=false}={}){
   let h = "";
   if(inherit) h += `<option value="inherit"${cur==="inherit"?" selected":""}>${esc(t("a_inherit"))}</option>`;
   for(const [g, list] of CATALOG){
-    let items = list.slice();
+    let items = list.filter(k => !(isMac() && WIN_ONLY.has(k)));
+    if(isMac() && g==="grp_windows") items.splice(1, 0, "builtin:appexpose");
     if(g==="grp_custom" && gestures) items.push("gestures");
     h += `<optgroup label="${esc(t(g))}">` + items.map(k=>{
       const lbl = k==="default"||k==="none"||k==="keys"||k==="run"||k==="gestures" ? t("a_"+k) : actLabel(keyAct(k));
@@ -430,6 +446,7 @@ const mock = (() => {
     receivers:[{id:"bolt",kind:"bolt",name:"Logi Bolt",devices:1}], pairing:null, sys:{speed:10,accel:true,scrollLines:3,animations:true}};
   st.devices.push({key:"generic",name:"Any mouse",conn:"system",online:true,ready:true,mouse:true,battery:-1,generic:true,buttons:["back","forward","middle"],gestures:true});
   if(location.hash.includes("generic")) st.devices = st.devices.filter(d=>d.generic);
+  if(location.hash.includes("mac")){ st.platform = "mac"; st.sys = null; st.accessibility = false; }
   return async (cmd, arg) => {
     if(location.hash==="#nodev") st.devices=[];
     switch(cmd){
@@ -477,7 +494,7 @@ function toast(msg){ const el=$("#toast"); el.textContent=msg; el.classList.add(
 window.__mishkPush = s => {
   if(!S) return;
   S.devices = s.devices; S.optionsPlus = s.optionsPlus; S.autostart = s.autostart;
-  S.pairing = s.pairing; S.receivers = s.receivers;
+  S.pairing = s.pairing; S.receivers = s.receivers; S.accessibility = s.accessibility; S.platform = s.platform || S.platform;
   renderModal();
   if(!saving){
     // only fields the app itself may change
@@ -536,6 +553,8 @@ function renderChrome(){
   }
   $("#hdr").innerHTML = h;
   $("#banner").innerHTML = S.optionsPlus ? `<div class="banner"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17v.5"/></svg><p>${htx("optplus")}</p><button class="btn primary" id="killOpt">${htx("optplus_btn")}</button></div>` : "";
+  if(isMac() && !S.accessibility) $("#banner").innerHTML += `<div class="banner"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.5"/></svg><p><b style="font-weight:600">${esc(t("ax_t"))}</b> ${esc(t("ax_b"))}</p><button class="btn primary" id="askAx">${esc(t("ax_btn"))}</button></div>`;
+  const ax = $("#askAx"); if(ax) ax.onclick = () => api("askAccessibility");
   const k = $("#killOpt"); if(k) k.onclick = async () => { await api("quitOptionsPlus"); S.optionsPlus=false; toast(t("optplus_done")); renderChrome(); };
 }
 
@@ -686,7 +705,7 @@ const GICON = {
   right: GA('<path d="M5 12h14M13 6l6 6-6 6"/>'),
 };
 function capture(id, label, value){
-  const hasWin = /(^|\+)win\+/i.test(value||"");
+  const hasWin = /(^|\+)(win|cmd)\+/i.test(value||"");
   return `<div class="field"><label for="${id}">${esc(label)}</label><div class="capture"><input type="text" readonly id="${id}" data-cap="${id}" value="${esc(value||"")}" placeholder="${esc(t("ed_keys_ph"))}"><button class="btn ghost" data-clear="${id}">${esc(t("ed_clear"))}</button></div>
   <label class="wintog"><input type="checkbox" data-win="${id}" ${hasWin?"checked":""}> ${esc(t("ed_win"))}</label></div>`;
 }
@@ -701,7 +720,7 @@ function comboFrom(e, win){
   else if(/^F\d+$/.test(e.code)) main = e.code;
   else if(CODE[e.code]) main = CODE[e.code];
   const mods = [];
-  if(e.ctrlKey) mods.push("Ctrl"); if(e.shiftKey) mods.push("Shift"); if(e.altKey) mods.push("Alt"); if(e.metaKey || win) mods.push("Win");
+  if(e.ctrlKey) mods.push("Ctrl"); if(e.shiftKey) mods.push("Shift"); if(e.altKey) mods.push(isMac() ? "Option" : "Alt"); if(e.metaKey || win) mods.push(SUPER());
   return main ? [...mods, main].join("+") : null;
 }
 function setCap(id, val){
@@ -778,8 +797,8 @@ bind.buttons = () => {
   });
   document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => setCap(b.dataset.clear, ""));
   document.querySelectorAll("[data-win]").forEach(cb => cb.onchange = () => {
-    const id = cb.dataset.win, inp = $("#"+CSS.escape(id)); let v = inp.value.replace(/(^|\+)Win(?=\+)/i, "").replace(/^\+/, "");
-    if(cb.checked && v) { const parts=v.split("+"); const main=parts.pop(); v=[...parts.filter(x=>x!=="Win"),"Win",main].join("+"); }
+    const id = cb.dataset.win, inp = $("#"+CSS.escape(id)); let v = inp.value.replace(/(^|\+)(Win|Cmd)(?=\+)/i, "").replace(/^\+/, "");
+    if(cb.checked && v) { const parts=v.split("+"); const main=parts.pop(); v=[...parts.filter(x=>!/^(win|cmd)$/i.test(x)),SUPER(),main].join("+"); }
     setCap(id, v);
   });
 };
@@ -869,7 +888,7 @@ function prettyName(a){
   const b = a.exe.replace(/\.exe$/,""); return b.charAt(0).toUpperCase()+b.slice(1);
 }
 function addProfile(exe, name){
-  exe = exe.trim().toLowerCase(); if(!exe) return; if(!exe.endsWith(".exe")) exe += ".exe";
+  exe = exe.trim().toLowerCase(); if(!exe) return; if(!isMac() && !exe.endsWith(".exe")) exe += ".exe";
   const id = "p" + Date.now().toString(36);
   cfg().profiles.push({id, name: name || prettyName({exe}), exe, buttons:{}, thumb:{type:"inherit"}});
   save(); UI.ctx = id; UI.page = "buttons"; renderChrome(); renderPage();

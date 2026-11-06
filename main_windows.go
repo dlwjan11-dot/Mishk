@@ -16,7 +16,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-const appVersion = "1.0.0"
+const appVersion = "1.1.0"
 
 //go:embed ui/index.html
 var indexHTML string
