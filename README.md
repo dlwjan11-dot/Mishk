@@ -4,7 +4,7 @@
 
 # Mishk
 
-**A small, fast replacement for Logi Options+ on Windows**
+**A small, fast replacement for Logi Options+ on Windows and macOS**
 
 Made for the Logitech MX Master 3S, and works with most mice: other Logitech mice over HID++, and the back, forward and middle buttons of any mouse from any brand.
 
@@ -12,7 +12,7 @@ Made for the Logitech MX Master 3S, and works with most mice: other Logitech mic
 
 English · [العربية](README.ar.md)
 
-[**Download Mishk for Windows**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)
+[**Download for Windows**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip) · [**Download for Mac**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-macOS.zip)
 
 </div>
 
@@ -20,7 +20,7 @@ English · [العربية](README.ar.md)
 
 ## Why
 
-Logi Options+ is heavy, crashes, and sometimes disappears from the tray. Mishk is one 3.6 MB file with no installer and no account. It opens instantly, and when you close the window it drops back to the tray and frees its memory.
+Logi Options+ is heavy, crashes, and sometimes disappears from the tray. Mishk is a small app with no installer and no account, for Windows and Mac. It opens instantly, and when you close the window it drops back to the tray and frees its memory.
 
 Mishk talks to the mouse directly over Logitech's HID++ protocol. Buttons are reported by the mouse itself, so there's no Windows mouse hook that can time out and leave your buttons dead.
 
@@ -67,6 +67,9 @@ Mishk talks to the mouse directly over Logitech's HID++ protocol. Buttons are re
 
 ## Getting started
 
+**Windows**
+
+
 1. Quit Logi Options+, and turn off its startup. Both apps fight over the mouse. Mishk warns you if Options+ is running and can close it.
 2. [Download Mishk-Windows.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip), right-click it and choose **Extract All**, then run `Mishk.exe`.
 3. Windows SmartScreen may warn you because the app isn't signed: click **More info**, then **Run anyway**.
@@ -75,14 +78,24 @@ Mishk adds itself to the tray and starts with Windows. Settings are saved in `%A
 
 Needs Windows 10 or 11 with the Microsoft Edge WebView2 Runtime (already part of Windows 11).
 
+**Mac** (macOS 11 or newer, Apple Silicon and Intel)
+
+1. Quit Logi Options+.
+2. [Download Mishk-macOS.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-macOS.zip), unzip it and drag **Mishk** to Applications.
+3. Open it. The Mac version isn't notarized by Apple yet, so the first time macOS blocks it: go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+4. Allow Mishk under **Privacy & Security → Accessibility**, so it can send shortcuts and remap other mice.
+
+Mishk lives in the menu bar and opens at login. Settings are saved in `~/Library/Application Support/Mishk`.
+
 ## Limitations
 
-- Shortcuts don't reach apps running as Administrator unless Mishk runs as Administrator too.
+- Windows: shortcuts don't reach apps running as Administrator unless Mishk runs as Administrator too.
+- Mac: the Windows-only pointer speed, acceleration, scroll-line and animation settings aren't on the Mac version; use System Settings for those.
 - Tested against a simulated MX Master 3S and Bolt receiver. Real-hardware reports are welcome: open **Device & settings → Show log** and attach it to an issue.
 
 ## Building
 
-Needs Go 1.22+, Python 3 and mingw `windres`. Dependencies are vendored, so it builds offline:
+The Mac app is built and smoke-tested automatically on GitHub's macOS machines (see `.github/workflows/macos.yml`) and published to `download/`. For Windows you need Go 1.22+, Python 3 and mingw `windres`. Dependencies are vendored, so it builds offline:
 
 ```sh
 ./build.sh        # writes dist/Mishk.exe

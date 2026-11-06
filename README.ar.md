@@ -4,7 +4,7 @@
 
 # مشك — Mishk
 
-**بديل صغير وسريع لـ Logi Options+ على ويندوز**
+**بديل صغير وسريع لـ Logi Options+ على ويندوز والماك**
 
 معمول لـ MX Master 3S، وبيشتغل مع أغلب الماوسات: ماوسات لوجيتك التانية، وأزرار الرجوع والتقدّم والزر الأوسط لأي ماوس من أي شركة.
 
@@ -12,7 +12,7 @@
 
 [English](README.md) · العربية
 
-[**نزّل Mishk لويندوز**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)
+[**نزّل لويندوز**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip) · [**نزّل للماك**](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-macOS.zip)
 
 </div>
 
@@ -22,7 +22,7 @@
 
 ## ليش؟
 
-برنامج Logi Options+ تقيل، وبيعلّق، وأحياناً بيختفي من الـ tray. أما Mishk فهو ملف واحد حجمه 3.6MB، بدون تنصيب وبدون حساب. بيفتح فوراً، ولما تسكّر النافذة بيرجع للـ tray وبيفضّي الذاكرة.
+برنامج Logi Options+ تقيل، وبيعلّق، وأحياناً بيختفي من الـ tray. أما Mishk فهو برنامج صغير، بدون تنصيب وبدون حساب، لويندوز والماك. بيفتح فوراً، ولما تسكّر النافذة بيرجع للـ tray وبيفضّي الذاكرة.
 
 البرنامج بيحكي مع الماوس مباشرة عن طريق بروتوكول HID++ تبع لوجيتك. الماوس نفسه هو اللي بيخبّر عن ضغطات الأزرار، فما في hook بالويندوز ممكن يوقف فجأة ويخلي الأزرار ما تشتغل.
 
@@ -73,6 +73,9 @@
 
 ## طريقة التشغيل
 
+**ويندوز**
+
+
 1. سكّر Logi Options+ وشيله من بدء التشغيل، لأن البرنامجين بيتضاربوا على الماوس. Mishk بينبهك إذا لقاه شغّال، وفيه زر بيسكّره.
 2. [نزّل Mishk-Windows.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-Windows.zip)، وكبسة يمين عليه ← **Extract All**، وبعدين شغّل `Mishk.exe`.
 3. إذا طلعلك تحذير SmartScreen لأن البرنامج مش موقّع، اضغط **More info** وبعدين **Run anyway**.
@@ -81,14 +84,24 @@
 
 بيحتاج ويندوز 10 أو 11 مع Microsoft Edge WebView2 Runtime، وهو موجود أصلاً بويندوز 11.
 
+**ماك** (macOS 11 أو أحدث، Apple Silicon وIntel)
+
+1. سكّر Logi Options+.
+2. [نزّل Mishk-macOS.zip](https://github.com/dlwjan11-dot/Mishk/raw/main/download/Mishk-macOS.zip)، فك الضغط، واسحب **Mishk** لمجلد Applications.
+3. افتحه. نسخة الماك لسا مش موثّقة من Apple، فأول مرة الماك رح يمنعه: روح على **System Settings ← Privacy & Security**، انزل لتحت واضغط **Open Anyway**.
+4. اسمح لـ Mishk بقسم **Privacy & Security ← Accessibility**، لحتى يقدر يبعت اختصارات ويغيّر أزرار الماوسات التانية.
+
+البرنامج بيضل بشريط القوائم فوق، وبيفتح لما تسجّل دخول. الإعدادات بتنحفظ بمجلد `~/Library/Application Support/Mishk`.
+
 ## شغلات لازم تعرفها
 
-- الاختصارات ما بتوصل للبرامج اللي شغّالة كـ Administrator، إلا إذا شغّلت Mishk كمان كـ Administrator.
+- ويندوز: الاختصارات ما بتوصل للبرامج اللي شغّالة كـ Administrator، إلا إذا شغّلت Mishk كمان كـ Administrator.
+- ماك: إعدادات سرعة المؤشر والتسارع وأسطر التمرير وتأثيرات الحركة موجودة بس بنسخة ويندوز، وعلى الماك بتنعمل من System Settings.
 - البرنامج مجرّب على MX Master 3S ومستقبل Bolt وهميين. إذا جربته على جهازك وصار شي، روح على **الجهاز والإعدادات ← اعرض السجل** وحطّه بـ Issue.
 
 ## البناء من الكود
 
-بيحتاج Go 1.22 أو أحدث، وPython 3، و`windres` من mingw. المكتبات موجودة جوّا المشروع، فبيتبنى بدون إنترنت:
+نسخة الماك بتنبنى وبتنجرّب لحالها على أجهزة ماك عند GitHub (شوف `.github/workflows/macos.yml`)، وبتنحط بمجلد `download/`. لويندوز بتحتاج Go 1.22 أو أحدث، وPython 3، و`windres` من mingw. المكتبات موجودة جوّا المشروع، فبيتبنى بدون إنترنت:
 
 </div>
 
