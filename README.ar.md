@@ -95,6 +95,7 @@ go test ./...     # بيجرّب البروتوكول على ماوس MX Master 
 ## شكر
 
 - تفاصيل بروتوكول HID++ اتأكدت منها من [Solaar](https://github.com/pwr-Solaar/Solaar) و[Mouser](https://github.com/TomBadash/Mouser) (رخصة MIT)
+- صورة الماوس من تصميم عبد الرحمن (Abdulmedia)
 - [go-webview2](https://github.com/jchv/go-webview2) (رخصة MIT)
 - خط IBM Plex Sans Arabic، رخصة SIL Open Font License ([res/FONT-LICENSE-OFL.txt](res/FONT-LICENSE-OFL.txt))
 

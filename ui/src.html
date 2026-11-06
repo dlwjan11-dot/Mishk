@@ -286,7 +286,7 @@ ar:{
   pw_err_timeout:"خلص الوقت قبل ما يكمل الربط.", pw_err_failed:"المستقبل رفض الربط. جرّب مرة تانية، وقرّب الماوس من المستقبل.",
   pw_err_noreceiver:"ما في مستقبل Bolt موصول.", pw_err_start:"المستقبل ما قبل يبلّش البحث. شيله وركّبه وجرّب مرة تانية.",
   pw_cancel:"إلغاء", pw_close:"تمام", pw_retry:"جرّب مرة تانية",
-  ph_use:"استخدم صورة الماوس تبعك", ph_change:"غيّر الصورة", ph_arrange:"رتّب النقاط", ph_done:"خلصت", ph_reset:"رجّع الرسمة",
+  ph_use:"استخدم صورة الماوس تبعك", ph_change:"غيّر الصورة", ph_arrange:"رتّب النقاط", ph_done:"خلصت", ph_reset:"رجّع الصورة الأصلية",
   ph_hint:"صوّر الماوس من فوق على خلفية سادة. اسحب الصورة لتحركها، وكبّرها أو صغّرها، وبعدين اسحب كل نقطة لفوق الزر تبعها.", ph_size:"حجم الصورة",
   on:"شغّال", off:"مطفي"
 },
@@ -354,7 +354,7 @@ en:{
   pw_err_timeout:"Time ran out before pairing finished.", pw_err_failed:"The receiver refused the pairing. Try again with the mouse close to the receiver.",
   pw_err_noreceiver:"No Bolt receiver is plugged in.", pw_err_start:"The receiver didn't start searching. Unplug it, plug it back in and try again.",
   pw_cancel:"Cancel", pw_close:"Done", pw_retry:"Try again",
-  ph_use:"Use a photo of your mouse", ph_change:"Change photo", ph_arrange:"Arrange dots", ph_done:"Done", ph_reset:"Back to the drawing",
+  ph_use:"Use a photo of your mouse", ph_change:"Change photo", ph_arrange:"Arrange dots", ph_done:"Done", ph_reset:"Back to the built-in image",
   ph_hint:"Shoot the mouse from above on a plain background. Drag the photo to move it, resize it, then drag each dot onto its button.", ph_size:"Photo size",
   on:"On", off:"Off"
 }};
@@ -551,10 +551,23 @@ const HS = {
   gesture: {x:228, y:424, side:"l", cy:446},
 };
 function knurl(x,y,w,h,n){ let s=""; for(let i=1;i<n;i++){ const yy=y+h*i/n; s+=`<line x1="${x+3}" x2="${x+w-3}" y1="${yy}" y2="${yy}" stroke="var(--knurl)" stroke-width="1.4"/>`; } return s; }
+// Built-in MX Master 3S image and where its buttons are (fractions of the image).
+const BUILTIN_PHOTO = "data:image/webp;base64,{{MOUSE_WEBP}}";
+const BUILTIN_SIZE = [{{MOUSE_W}}, {{MOUSE_H}}];
+const BUILTIN_SPOTS = {middle:[.463,.140], top:[.604,.283], thumb:[.315,.445], forward:[.235,.450], back:[.256,.560], gesture:[.083,.690]};
+const BUILTIN_BOX = {x:194, y:30, w:372, h:500};
+function builtinRect(){
+  const b = BUILTIN_BOX, [w,h] = BUILTIN_SIZE, r = Math.min(b.w/w, b.h/h);
+  return {x: b.x + (b.w - w*r)/2, y: b.y + (b.h - h*r)/2, w: w*r, h: h*r};
+}
 function spot(k){
   const c = cfg();
-  if(UI.photo && c.photoSpots && c.photoSpots[k]) { const [x,y] = c.photoSpots[k]; return {...HS[k], x, y}; }
-  return HS[k];
+  if(UI.photo){
+    if(c.photoSpots && c.photoSpots[k]) { const [x,y] = c.photoSpots[k]; return {...HS[k], x, y}; }
+    return HS[k];
+  }
+  const r = builtinRect(), [fx,fy] = BUILTIN_SPOTS[k];
+  return {...HS[k], x: Math.round(r.x + fx*r.w), y: Math.round(r.y + fy*r.h)};
 }
 function photoBox(){
   const c = cfg(), sc = c.photoScale || 1, [dx, dy] = c.photoShift || [0,0], w = 360*sc, h = 520*sc;
@@ -573,6 +586,8 @@ function mouseSVG(sel, has){
   }).join("");
   const dots = BTN_KEYS.map(k=>{ const p=spot(k); if(!has(k)) return ""; return `<g class="hs" data-btn="${k}" data-spot="${k}">${UI.photo?`<circle class="halo" cx="${p.x}" cy="${p.y}" r="14"/>`:""}<circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/><circle class="hsdot ${k===sel?"sel":""}" cx="${p.x}" cy="${p.y}" r="${UI.photo?7:5.5}"/></g>`; }).join("");
   if(UI.photo) return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">${photoSVG()}${leads}${dots}</svg>`;
+  if(BUILTIN_PHOTO.length > 40){ const r = builtinRect();
+    return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg"><image href="${BUILTIN_PHOTO}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>${leads}${dots}</svg>`; }
   return `<svg viewBox="0 0 760 560" aria-hidden="true" id="dsvg">
   <defs><linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--body-2)"/><stop offset="1" stop-color="var(--body)"/></linearGradient></defs>
   <path d="M332 58C364 36 448 38 480 70C512 108 526 200 521 300C516 400 500 470 452 506C410 534 330 534 290 506C252 482 205 462 198 408C192 368 226 352 246 330C262 312 268 292 266 262C262 200 280 108 332 58Z" fill="url(#shell)" stroke="var(--line-2)" stroke-width="1.5"/>
@@ -610,7 +625,7 @@ function pageButtons(){
   else bar += `<button class="btn ghost" id="phArr">${esc(t("ph_arrange"))}</button><button class="btn ghost" id="phUse">${esc(t("ph_change"))}</button><button class="btn ghost danger" id="phReset">${esc(t("ph_reset"))}</button>`;
   bar += `</div>`;
   if(UI.arrange) bar += `<p class="hint">${esc(t("ph_hint"))}</p>`;
-  h += `<div class="btnpage"><div><div class="diagram ${d&&!d.online?"off":""} ${UI.arrange?"arrange":""} ${UI.photo?"photo":""}">${mouseSVG(UI.sel, has)}${callouts}</div>${bar}</div>${editor()}</div>`;
+  h += `<div class="btnpage"><div><div class="diagram ${d&&!d.online?"off":""} ${UI.arrange?"arrange":""} photo">${mouseSVG(UI.sel, has)}${callouts}</div>${bar}</div>${editor()}</div>`;
   return h;
 }
 function editor(){

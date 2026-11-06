@@ -85,6 +85,7 @@ go test ./...     # runs the protocol engine against a simulated MX Master 3S
 ## Credits
 
 - HID++ details cross-checked against [Solaar](https://github.com/pwr-Solaar/Solaar) and [Mouser](https://github.com/TomBadash/Mouser) (MIT)
+- Mouse image by Abdulrahman (Abdulmedia)
 - [go-webview2](https://github.com/jchv/go-webview2) (MIT)
 - IBM Plex Sans Arabic, SIL Open Font License ([res/FONT-LICENSE-OFL.txt](res/FONT-LICENSE-OFL.txt))
 
