@@ -51,6 +51,8 @@ jobs:
           sleep 10
           screencapture -x build/screen.png || true
           kill $PID || true
+          cat build/ui.log || true
+          tail -20 "$HOME/Library/Application Support/Mishk/mishk.log" || true
       - uses: actions/upload-artifact@v4
         with:
           name: Mishk-macOS
@@ -63,7 +65,9 @@ jobs:
           cp build/Mishk-macOS.zip download/Mishk-macOS.zip
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add download/Mishk-macOS.zip
+          mkdir -p ci
+          [ -f build/screen.png ] && sips -Z 1600 build/screen.png --out ci/mac-screen.png >/dev/null || true
+          git add download/Mishk-macOS.zip ci || true
           git commit -m "macOS build ${GITHUB_SHA::7} [skip ci]" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
